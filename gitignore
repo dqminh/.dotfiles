@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+*.class
+vim/.netrwhist
+local/*
+build/*
+*.orig
+.vagrant*
+.ropeproject
+*.log
