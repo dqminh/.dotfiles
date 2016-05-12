@@ -52,7 +52,7 @@ HYPHEN_INSENSITIVE="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git gpg-agent golang history-substring-search pass)
+plugins=(git golang history-substring-search pass)
 
 # User configuration
 source $ZSH/oh-my-zsh.sh
