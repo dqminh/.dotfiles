@@ -2,7 +2,7 @@
 	path = fonts
 	url = git@github.com:powerline/fonts.git
 [submodule "termcolors"]
-	path = termcolors
+	path = terminals/termcolors
 	url = git@github.com:mbadolato/iTerm2-Color-Schemes.git
 [submodule "vim/bundle/vim-go"]
 	path = vim/bundle/vim-go
