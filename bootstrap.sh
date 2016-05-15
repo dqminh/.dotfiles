@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+GOVERSION=1.6.2
+
 cmd=$1
 platform='unknown'
 unamestr=`uname`
@@ -23,7 +25,7 @@ if [[ $platform == 'linux' ]]; then
 
     # install go
     (
-      wget https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
+      wget https://storage.googleapis.com/golang/go${GOVERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
         sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
         rm -rf /tmp/go.tar.gz
     )
@@ -33,15 +35,6 @@ fi
 mkdir -p $HOME/gocode
 mkdir -p $HOME/workspace
 
-rm -rf $HOME/.vim && ln -s $HOME/.dotfiles/vim $HOME/.vim
-rm -rf $HOME/.vimrc && ln -s $HOME/.dotfiles/vimrc $HOME/.vimrc
-rm -rf $HOME/.bash_profile && ln -s $HOME/.dotfiles/bash_profile $HOME/.bash_profile
-rm -rf $HOME/.bashrc && ln -s $HOME/.dotfiles/bashrc $HOME/.bashrc
-rm -rf $HOME/.tmux.conf && ln -s $HOME/.dotfiles/tmux.conf $HOME/.tmux.conf
-rm -rf $HOME/.gitconfig && ln -s $HOME/.dotfiles/gitconfig $HOME/.gitconfig
-rm -rf $HOME/.gitignore && ln -s $HOME/.dotfiles/gitignore $HOME/.gitignore
-
-
-if [[ $platform == 'linux' ]]; then
-  rm -rf $HOME/.profile && ln -s $HOME/.dotfiles/profile.linux $HOME/.profile
-fi
+for entry in vim vimrc zsh_profile zshrc tmux.conf gitconfig gitignore; do
+  rm -rf $HOME/.$entry && ln -s $HOME/.dotfiles/$entry $HOME/.$entry
+done
