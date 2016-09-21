@@ -2,7 +2,32 @@
 " This must be first, because it changes other options as a side effect.
 set nocompatible
 set encoding=utf-8
-execute pathogen#infect()
+
+call plug#begin()
+Plug 'fatih/vim-go'
+Plug 'thisivan/vim-bufexplorer'
+Plug 'ntpeters/vim-better-whitespace'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'vim-scripts/YankRing.vim'
+Plug 'godlygeek/tabular'
+Plug 'Raimondi/delimitMate'
+Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-endwise'
+Plug 'plasticboy/vim-markdown'
+Plug 'crosbymichael/vim-cfmt'
+Plug 'elzr/vim-json'
+Plug 'moorereason/vim-markdownfmt'
+Plug 'rking/ag.vim'
+Plug 'rust-lang/rust.vim'
+Plug 'klen/python-mode'
+Plug 'racer-rust/vim-racer'
+Plug 'ervandew/supertab'
+call plug#end()
+
 filetype plugin indent on
 syntax on
 
@@ -18,6 +43,7 @@ else
   set clipboard=unnamed
 endif
 
+set termguicolors
 set number             " Show line number
 set encoding=utf-8     " Enable utf-8 encoding by default
 set nobackup           " Disable backup file
@@ -33,10 +59,8 @@ set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
 set background=dark
-set synmaxcol=500 " not slow when highlight long line
-set t_Co=256
+set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme jellybeans
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -220,6 +244,10 @@ let g:SuperTabDefaultCompletionType = "context"
 let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
 let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
 let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
+
+" vim-racer
+let g:racer_cmd = "racer"
+let $RUST_SRC_PATH="/usr/local/rust/src/"
 
 " Cfmt
 let g:cfmt_style = '-linux'

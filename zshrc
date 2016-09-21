@@ -11,7 +11,7 @@ export ZSH=$HOME/.oh-my-zsh
 ZSH_THEME="daveverwer"
 
 # Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
+CASE_SENSITIVE="true"
 
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
@@ -52,13 +52,15 @@ HYPHEN_INSENSITIVE="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git golang history-substring-search pass)
+plugins=(git golang history-substring-search pass virtualenv virtualenvwrapper)
 
 # User configuration
 source $ZSH/oh-my-zsh.sh
 export EDITOR='vim'
 export GOPATH=$HOME/gocode
-export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+export PATH=$GOPATH/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
+export PATH=$HOME/.cargo/bin:$PATH
+export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 export GOPATH=$HOME/gocode
 
@@ -120,6 +122,6 @@ function go_doc()                { godoc -http="localhost:6060"; }
 function gocd()                  { cd `go list -f '{{.Dir}}' $1`; }
 function installed_packages()    { dpkg --get-selections | grep -v deinstall; }
 
-for file in ~/.{zshrc.local}; do
+for file in ~/.zshrc.local; do
   [[ -r "$file" ]] && [[ -f "$file" ]] && source "$file"
 done

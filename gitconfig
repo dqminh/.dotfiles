@@ -18,7 +18,7 @@
   st = status
   co = checkout
   pr = pull --rebase
-  cs = commit -sS
+  cs = commit -s
 
   # golang codereview
   change = codereview change
@@ -53,12 +53,10 @@
   [merge]
   # Include summaries of merged commits in newly created merge commit messages
   log = true
-
 # Use `origin` as the default remote on the `master` branch in all cases
 [branch "master"]
   remote = origin
   merge = refs/heads/master
-
 # URL shorthands
 [url "git@github.com:"]
   insteadOf = "gh:"
@@ -73,12 +71,13 @@
 [url "git://gist.github.com/"]
   insteadOf = "gist:"
 [user]
-  name = Daniel, Dao Quang Minh
+  name = Daniel Dao
   email = dqminh89@gmail.com
-  signingkey = 07C2E86E
 [push]
   default = current
 [rerere]
   enabled = 1
 [http]
   cookiefile = /Users/dqminh/.gitcookies
+[web]
+  browser = open
