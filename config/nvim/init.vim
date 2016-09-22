@@ -1,6 +1,5 @@
 " Use Vim settings, rather then Vi settings (much better!).
 " This must be first, because it changes other options as a side effect.
-set nocompatible
 set encoding=utf-8
 
 call plug#begin()
@@ -26,6 +25,8 @@ Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
 Plug 'ervandew/supertab'
+Plug 'mhartington/oceanic-next'
+Plug 'joshdick/onedark.vim'
 call plug#end()
 
 filetype plugin indent on
@@ -37,10 +38,12 @@ set backspace=indent,eol,start " allow backspacing over everything in insert mod
 " Use system clipboard
 " Writes to the unnamed register also writes to the * and + registers. This
 " makes it easy to interact with the system clipboard
-if has ('unnamedplus')
-  set clipboard=unnamedplus
-else
-  set clipboard=unnamed
+if has('clipboard')
+  if has ('unnamedplus')
+    set clipboard=unnamedplus
+  else
+    set clipboard=unnamed
+  endif
 endif
 
 set termguicolors
