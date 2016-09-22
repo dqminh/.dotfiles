@@ -70,7 +70,7 @@ if [[ $platform == 'linux' ]]; then
       wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
         tar -C /tmp -xzf /tmp/neovim.tar.gz && \
         cd /tmp/neovim-${NEOVIM_VERSION} && \
-        make && \
+        make CMAKE_BUILD_TYPE=Release && \
         sudo make install && \
         cd /tmp && \
         rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
@@ -92,6 +92,19 @@ if [[ $platform == 'linux' ]]; then
   sudo update-alternatives --config editor
 elif [[ $platform == 'darwin' ]]; then
   if [[ $cmd == 'install' ]]; then
+    # install neovim
+    (
+      rm -rf /tmp/neovim*
+      wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
+        tar -C /tmp -xzf /tmp/neovim.tar.gz && \
+        cd /tmp/neovim-${NEOVIM_VERSION} && \
+        make CMAKE_BUILD_TYPE=Release && \
+        sudo make install && \
+        cd /tmp && \
+        rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
+        rm -rf /tmp/neovim.tar.gz
+    )
+
     echo "installing python"
     brew install python
     brew install python3
