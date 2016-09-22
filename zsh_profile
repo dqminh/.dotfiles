@@ -10,4 +10,8 @@ case $(uname) in
       eval $( gpg-agent --daemon --write-env-file ~/.gpg-agent-info )
     fi
     ;;
+    # execute lemonade server for copy-paste
+    if [[ -x $HOME/gocode/bin/lemonade ]]; then
+      $HOME/gocode/bin/lemonade server -allow 127.0.0.1 &
+    fi
 esac
