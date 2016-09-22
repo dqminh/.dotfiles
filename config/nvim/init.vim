@@ -27,6 +27,7 @@ Plug 'racer-rust/vim-racer'
 Plug 'ervandew/supertab'
 Plug 'mhartington/oceanic-next'
 Plug 'joshdick/onedark.vim'
+Plug 'w0ng/vim-hybrid'
 call plug#end()
 
 filetype plugin indent on
@@ -64,6 +65,7 @@ set textwidth=79       " Default maximum textwidth is 79
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
+colorscheme onedark
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
