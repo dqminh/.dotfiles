@@ -1,6 +1,8 @@
 case $(uname) in
   Linux)
-    gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
+    if which gsettings >/dev/null; then
+      gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
+    fi
     ;;
   Darwin)
     [ -f ~/.gpg-agent-info ] && source ~/.gpg-agent-info
@@ -10,8 +12,4 @@ case $(uname) in
       eval $( gpg-agent --daemon --write-env-file ~/.gpg-agent-info )
     fi
     ;;
-    # execute lemonade server for copy-paste
-    if [[ -x $HOME/gocode/bin/lemonade ]]; then
-      $HOME/gocode/bin/lemonade server -allow 127.0.0.1 &
-    fi
 esac

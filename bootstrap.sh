@@ -127,3 +127,8 @@ done
   go get -u github.com/shurcooL/markdownfmt
   go get -u github.com/pocke/lemonade
 )
+
+if [[ $platform == 'darwin' ]]; then
+	ln -sf $HOME/.dotfiles/LaunchAgents/local.lemonade.plist $HOME/Library/LaunchAgents/local.lemonade.plist
+	launchctl load $HOME/Library/LaunchAgents/local.lemonade.plist
+fi
