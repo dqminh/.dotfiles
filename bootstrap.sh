@@ -90,7 +90,7 @@ if [[ $platform == 'linux' ]]; then
     sudo apt-get autoclean
     sudo apt-get autoremove
   fi
-  
+
 elif [[ $platform == 'darwin' ]]; then
   if [[ $cmd == 'install' ]]; then
     ( install_go )

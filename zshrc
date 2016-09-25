@@ -1,5 +1,5 @@
-BASE16_SHELL="$HOME/.dotfiles/terminals/base16-shell/base16-railscast.dark.sh"
-[[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
+GRUVBOX_SHELL="$HOME/.config/nvim/plugged/gruvbox/gruvbox_256palette.sh"
+[[ -f $GRUVBOX_SHELL  ]] && source $GRUVBOX_SHELL
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh

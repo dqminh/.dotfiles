@@ -34,6 +34,7 @@ Plug 'freeo/vim-kalisi'
 Plug 'morhetz/gruvbox'
 Plug 'zefei/cake16'
 Plug 'Yggdroot/indentLine'
+Plug 'itchyny/lightline.vim'
 call plug#end()
 
 filetype plugin indent on
@@ -71,7 +72,7 @@ set textwidth=79       " Default maximum textwidth is 79
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme jellybeans
+colorscheme gruvbox
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -140,22 +141,22 @@ set iskeyword+=- " do not use - as a word separator
 autocmd BufWritePre <buffer> :%s/\s\+$//e
 
 " Status line
-hi statusline ctermfg=10 ctermbg=18
-set statusline=
-""display a warning if &paste is set
-set statusline+=%#error#%{&paste?'[paste]':''}%*
-set statusline+=%*\ %<%F%* "full path
-set statusline+=%*%=%5l%*  "current line
-set statusline+=%*/%L%*    "total lines
-set statusline+=%*%4v\ %*  "virtual column number
-function! ActiveStatus()
-  hi statusline ctermfg=10 ctermbg=18
-endfunction
-function! InactiveStatus()
-  hi statusline ctermfg=5 ctermbg=0
-endfunction
-au WinEnter * call ActiveStatus()
-au WinLeave * call InactiveStatus()
+" hi statusline ctermfg=10 ctermbg=18
+" set statusline=
+" ""display a warning if &paste is set
+" set statusline+=%#error#%{&paste?'[paste]':''}%*
+" set statusline+=%*\ %<%F%* "full path
+" set statusline+=%*%=%5l%*  "current line
+" set statusline+=%*/%L%*    "total lines
+" set statusline+=%*%4v\ %*  "virtual column number
+" function! ActiveStatus()
+"   hi statusline ctermfg=10 ctermbg=18
+" endfunction
+" function! InactiveStatus()
+"   hi statusline ctermfg=5 ctermbg=0
+" endfunction
+" au WinEnter * call ActiveStatus()
+" au WinLeave * call InactiveStatus()
 
 " Autoreload vimrc
 autocmd! bufwritepost vimrc source %
