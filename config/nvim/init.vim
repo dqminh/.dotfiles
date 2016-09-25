@@ -28,6 +28,12 @@ Plug 'ervandew/supertab'
 Plug 'mhartington/oceanic-next'
 Plug 'joshdick/onedark.vim'
 Plug 'w0ng/vim-hybrid'
+Plug 'junegunn/seoul256.vim'
+Plug 'nanotech/jellybeans.vim'
+Plug 'freeo/vim-kalisi'
+Plug 'morhetz/gruvbox'
+Plug 'zefei/cake16'
+Plug 'Yggdroot/indentLine'
 call plug#end()
 
 filetype plugin indent on
@@ -65,7 +71,7 @@ set textwidth=79       " Default maximum textwidth is 79
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme onedark
+colorscheme jellybeans
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -266,12 +272,10 @@ endif
 "------------------------------------------------------------------------------
 
 au BufNewFile,BufRead *.txt setfiletype text
-au BufNewFile,BufRead *.txt setfiletype text
-au BufNewFile,BufRead *.json set syntax=javascript ft=javascript
 au BufNewFile,BufRead *.hbs set syntax=mustache
 au BufNewFile,BufRead *.pde set filetype=c syntax=c cindent
 au BufNewFile,BufRead *.html set textwidth=999
-au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=78 syntax=off
+au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=120 syntax=off
 au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru} set ft=ruby
 autocmd BufWritePre *.c,*.h Cfmt
 au FileType text setlocal textwidth=78

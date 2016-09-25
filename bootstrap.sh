@@ -14,6 +14,36 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
    platform='darwin'
 fi
 
+install_neovim() {
+  rm -rf /tmp/neovim*
+  wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
+    tar -C /tmp -xzf /tmp/neovim.tar.gz && \
+    cd /tmp/neovim-${NEOVIM_VERSION} && \
+    make CMAKE_BUILD_TYPE=Release && \
+    sudo make install && \
+    cd /tmp && \
+    rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
+    rm -rf /tmp/neovim.tar.gz
+}
+
+install_go() {
+  sudo rm -rf /usr/local/go
+  wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
+    sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    rm -rf /tmp/go.tar.gz
+}
+
+install_tmux() {
+  rm -rf $HOME/source/tmux
+  mkdir -p $HOME/source/tmux
+  wget https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz -O /tmp/tmux.tar.gz && \
+    tar -C $HOME/source/tmux -xzf /tmp/tmux.tar.gz && \
+    cd $HOME/source/tmux/tmux-${TMUX_VERSION} && \
+    ./configure && \
+    make && \
+    sudo ln -sf $HOME/source/tmux/tmux-${TMUX_VERSION}/tmux /usr/local/bin/tmux
+}
+
 # store external source code and dependencies for dev
 mkdir -p $HOME/source
 
@@ -44,38 +74,14 @@ if [[ $platform == 'linux' ]]; then
       wget \
       zsh
 
-    # install go
-    (
-      sudo rm -rf /usr/local/go
-      wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
-        sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
-        rm -rf /tmp/go.tar.gz
-    )
+    if [[ ! -z $DISPLAY ]]; then
+      sudo apt-get install -y \
+        xsel
+    fi
 
-    # install tmux
-    (
-      rm -rf $HOME/source/tmux
-      mkdir -p $HOME/source/tmux
-      wget https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz -O /tmp/tmux.tar.gz && \
-        tar -C $HOME/source/tmux -xzf /tmp/tmux.tar.gz && \
-        cd $HOME/source/tmux/tmux-${TMUX_VERSION} && \
-        ./configure && \
-        make && \
-        sudo ln -sf $HOME/source/tmux/tmux-${TMUX_VERSION}/tmux /usr/local/bin/tmux
-    )
-
-    # install neovim
-    (
-      rm -rf /tmp/neovim*
-      wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
-        tar -C /tmp -xzf /tmp/neovim.tar.gz && \
-        cd /tmp/neovim-${NEOVIM_VERSION} && \
-        make CMAKE_BUILD_TYPE=Release && \
-        sudo make install && \
-        cd /tmp && \
-        rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
-        rm -rf /tmp/neovim.tar.gz
-    )
+    ( install_go )
+    ( install_tmux )
+    ( install_neovim )
 
     # install neovim python client
     sudo pip2 install --upgrade neovim
@@ -84,30 +90,18 @@ if [[ $platform == 'linux' ]]; then
     sudo apt-get autoclean
     sudo apt-get autoremove
   fi
-  sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/nvim 60
-  sudo update-alternatives --config vi
-  sudo update-alternatives --install /usr/bin/vim vim /usr/local/bin/nvim 60
-  sudo update-alternatives --config vim
-  sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/nvim 60
-  sudo update-alternatives --config editor
+  
 elif [[ $platform == 'darwin' ]]; then
   if [[ $cmd == 'install' ]]; then
-    # install neovim
-    (
-      rm -rf /tmp/neovim*
-      wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
-        tar -C /tmp -xzf /tmp/neovim.tar.gz && \
-        cd /tmp/neovim-${NEOVIM_VERSION} && \
-        make CMAKE_BUILD_TYPE=Release && \
-        sudo make install && \
-        cd /tmp && \
-        rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
-        rm -rf /tmp/neovim.tar.gz
-    )
+    ( install_go )
+    ( install_tmux )
+    ( install_neovim )
 
     echo "installing python"
-    brew install python
-    brew install python3
+    brew install \
+      python \
+      python3 \
+      tmux
 
     echo "installing neovim client for python"
     sudo pip2 install --upgrade neovim
