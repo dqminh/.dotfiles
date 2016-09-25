@@ -1,1 +1,3 @@
-config/nvim/plugged
+config/*
+!config/nvim/init.vim
+!config/autoload/*
