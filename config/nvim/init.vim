@@ -4,9 +4,7 @@ set encoding=utf-8
 
 call plug#begin()
 Plug 'fatih/vim-go'
-Plug 'thisivan/vim-bufexplorer'
 Plug 'ntpeters/vim-better-whitespace'
-Plug 'ctrlpvim/ctrlp.vim'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'godlygeek/tabular'
 Plug 'Raimondi/delimitMate'
@@ -20,7 +18,6 @@ Plug 'plasticboy/vim-markdown'
 Plug 'crosbymichael/vim-cfmt'
 Plug 'elzr/vim-json'
 Plug 'moorereason/vim-markdownfmt'
-Plug 'rking/ag.vim'
 Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
@@ -35,6 +32,8 @@ Plug 'morhetz/gruvbox'
 Plug 'zefei/cake16'
 Plug 'Yggdroot/indentLine'
 Plug 'itchyny/lightline.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 call plug#end()
 
 filetype plugin indent on
@@ -140,27 +139,6 @@ set iskeyword+=- " do not use - as a word separator
 " Remove whitespace on save
 autocmd BufWritePre <buffer> :%s/\s\+$//e
 
-" Status line
-" hi statusline ctermfg=10 ctermbg=18
-" set statusline=
-" ""display a warning if &paste is set
-" set statusline+=%#error#%{&paste?'[paste]':''}%*
-" set statusline+=%*\ %<%F%* "full path
-" set statusline+=%*%=%5l%*  "current line
-" set statusline+=%*/%L%*    "total lines
-" set statusline+=%*%4v\ %*  "virtual column number
-" function! ActiveStatus()
-"   hi statusline ctermfg=10 ctermbg=18
-" endfunction
-" function! InactiveStatus()
-"   hi statusline ctermfg=5 ctermbg=0
-" endfunction
-" au WinEnter * call ActiveStatus()
-" au WinLeave * call InactiveStatus()
-
-" Autoreload vimrc
-autocmd! bufwritepost vimrc source %
-
 "------------------------------------------------------------------------------
 " KEYMAPS
 "------------------------------------------------------------------------------
@@ -234,9 +212,10 @@ map <leader>/ <plug>NERDCommenterToggle<CR>
 " Insert hashrocket
 imap <C-L> <Space>=><Space>
 
-" CtrlP
-noremap <leader>m :CtrlPCurWD<CR>
-let g:ctrlp_map = "<leader><leader>"
+" fzf
+nmap <leader><leader> :Files<CR>
+nmap <leader>be :Buffers<CR>
+nmap <leader>f :Ag<CR>
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>
@@ -247,9 +226,6 @@ nnoremap - <c-x>
 
 " Goimport
 let g:go_fmt_command = "goimports"
-
-" Ctrlp Settings
-let g:ctrlp_max_height = 20
 
 " Supertab
 let g:SuperTabDefaultCompletionType = "context"

@@ -125,3 +125,5 @@ function installed_packages()    { dpkg --get-selections | grep -v deinstall; }
 for file in ~/.zshrc.local; do
   [[ -r "$file" ]] && [[ -f "$file" ]] && source "$file"
 done
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
