@@ -34,6 +34,7 @@ Plug 'Yggdroot/indentLine'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'lifepillar/vim-solarized8'
 call plug#end()
 
 filetype plugin indent on
@@ -68,10 +69,12 @@ set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
-set background=dark
+set background=light
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme gruvbox
+set cursorline         " highlight current line
+colorscheme solarized8_light_high
+let g:lightline = { 'colorscheme': 'solarized' }
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -203,9 +206,6 @@ nnoremap <leader>dg :diffget<CR>
 nnoremap <leader>v V`]
 nnoremap <silent> <leader>W :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl<CR>:retab<CR>
 
-" Ack
-map <leader>f :Ag! -i<space>
-
 " NERDCommenter
 map <leader>/ <plug>NERDCommenterToggle<CR>
 
@@ -215,7 +215,22 @@ imap <C-L> <Space>=><Space>
 " fzf
 nmap <leader><leader> :Files<CR>
 nmap <leader>be :Buffers<CR>
-nmap <leader>f :Ag<CR>
+
+" grep
+if executable('rg')
+  set grepprg=rg\ --no-heading\ --vimgrep
+  set grepformat=%f:%l:%c:%m
+endif
+" bind K to grep word under cursor
+nnoremap K :grep! "\b<C-R><C-W>\b"<CR>:cw<CR>
+" bind \ (backward slash) to grep shortcut
+command! -bang -nargs=* GGrep silent! grep! <args>|cwindow|redraw!
+nmap <leader>f :GGrep<SPACE>
+
+" quickfix
+nmap <leader>q :copen<CR>
+nmap <leader>qc :cclose<CR>
+
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>
