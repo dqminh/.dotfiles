@@ -233,6 +233,9 @@ let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
 let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
 let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
 
+" JSON
+let g:vim_json_syntax_conceal = 0
+
 " vim-racer
 let g:racer_cmd = "racer"
 let $RUST_SRC_PATH="/usr/local/rust/src/"
