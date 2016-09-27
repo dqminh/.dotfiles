@@ -21,7 +21,7 @@ Plug 'moorereason/vim-markdownfmt'
 Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
-Plug 'ervandew/supertab'
+" Plug 'ervandew/supertab'
 Plug 'mhartington/oceanic-next'
 Plug 'joshdick/onedark.vim'
 Plug 'w0ng/vim-hybrid'
@@ -35,6 +35,9 @@ Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'lifepillar/vim-solarized8'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'zchee/deoplete-go', { 'do': 'make'}
+Plug 'zchee/deoplete-jedi'
 call plug#end()
 
 filetype plugin indent on
@@ -136,7 +139,7 @@ set tags=./tags;
 " Supertab
 " Let omnifunc and completefunc take precendence
 set complete-=i
-set completeopt=menu,menuone,longest " no scratch
+set completeopt=menu,menuone,longest,noselect " no scratch
 set iskeyword+=- " do not use - as a word separator
 
 " Remove whitespace on save
@@ -242,11 +245,17 @@ nnoremap - <c-x>
 " Goimport
 let g:go_fmt_command = "goimports"
 
-" Supertab
-let g:SuperTabDefaultCompletionType = "context"
-let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
-let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
-let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
+"" Supertab
+"let g:SuperTabDefaultCompletionType = "context"
+"let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
+"let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
+"let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
+
+" deoplete.vim
+let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
+let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
+let g:python_host_prog = '/usr/bin/python3'
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
 " JSON
 let g:vim_json_syntax_conceal = 0
@@ -266,6 +275,7 @@ endif
 " FILETYPES
 "------------------------------------------------------------------------------
 
+au BufNewFile,BufRead *.go set nolist
 au BufNewFile,BufRead *.txt setfiletype text
 au BufNewFile,BufRead *.hbs set syntax=mustache
 au BufNewFile,BufRead *.pde set filetype=c syntax=c cindent
