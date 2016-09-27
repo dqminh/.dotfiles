@@ -1,6 +1,3 @@
-GRUVBOX_SHELL="$HOME/.config/nvim/plugged/gruvbox/gruvbox_256palette.sh"
-[[ -f $GRUVBOX_SHELL  ]] && source $GRUVBOX_SHELL
-
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 

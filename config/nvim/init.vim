@@ -21,7 +21,6 @@ Plug 'moorereason/vim-markdownfmt'
 Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
-" Plug 'ervandew/supertab'
 Plug 'mhartington/oceanic-next'
 Plug 'joshdick/onedark.vim'
 Plug 'w0ng/vim-hybrid'
@@ -72,12 +71,12 @@ set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
-set background=light
+set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 set cursorline         " highlight current line
-colorscheme solarized8_light_high
-let g:lightline = { 'colorscheme': 'solarized' }
+colorscheme gruvbox
+let g:lightline = { 'colorscheme': 'gruvbox' }
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -136,7 +135,6 @@ set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.o,*.obj,.git,*.rbc,*.class,*.pyc,.svn
 " Tags
 set tags=./tags;
 
-" Supertab
 " Let omnifunc and completefunc take precendence
 set complete-=i
 set completeopt=menu,menuone,longest,noselect " no scratch
@@ -221,7 +219,7 @@ nmap <leader>be :Buffers<CR>
 
 " grep
 if executable('rg')
-  set grepprg=rg\ --no-heading\ --vimgrep
+  set grepprg=rg\ --ignore-case\ --no-heading\ --vimgrep
   set grepformat=%f:%l:%c:%m
 endif
 " bind K to grep word under cursor
@@ -244,12 +242,6 @@ nnoremap - <c-x>
 
 " Goimport
 let g:go_fmt_command = "goimports"
-
-"" Supertab
-"let g:SuperTabDefaultCompletionType = "context"
-"let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
-"let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
-"let g:SuperTabContextDiscoverDiscovery = ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
 
 " deoplete.vim
 let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
