@@ -5,7 +5,7 @@ set encoding=utf-8
 call plug#begin()
 Plug 'fatih/vim-go'
 Plug 'ntpeters/vim-better-whitespace'
-Plug 'vim-scripts/YankRing.vim'
+" Plug 'vim-scripts/YankRing.vim'
 Plug 'godlygeek/tabular'
 Plug 'Raimondi/delimitMate'
 Plug 'scrooloose/nerdcommenter'
@@ -37,6 +37,8 @@ Plug 'lifepillar/vim-solarized8'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
+Plug 'svermeulen/vim-easyclip'
+Plug 'tpope/vim-repeat'
 call plug#end()
 
 filetype plugin indent on
