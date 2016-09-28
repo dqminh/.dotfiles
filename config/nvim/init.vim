@@ -5,7 +5,6 @@ set encoding=utf-8
 call plug#begin()
 Plug 'fatih/vim-go'
 Plug 'ntpeters/vim-better-whitespace'
-" Plug 'vim-scripts/YankRing.vim'
 Plug 'godlygeek/tabular'
 Plug 'Raimondi/delimitMate'
 Plug 'scrooloose/nerdcommenter'
@@ -21,19 +20,15 @@ Plug 'moorereason/vim-markdownfmt'
 Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
-Plug 'mhartington/oceanic-next'
 Plug 'joshdick/onedark.vim'
 Plug 'w0ng/vim-hybrid'
-Plug 'junegunn/seoul256.vim'
 Plug 'nanotech/jellybeans.vim'
-Plug 'freeo/vim-kalisi'
 Plug 'morhetz/gruvbox'
 Plug 'zefei/cake16'
 Plug 'Yggdroot/indentLine'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'lifepillar/vim-solarized8'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
@@ -233,7 +228,6 @@ nmap <leader>f :GGrep<SPACE>
 " quickfix
 nmap <leader>q :copen<CR>
 nmap <leader>qc :cclose<CR>
-
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>

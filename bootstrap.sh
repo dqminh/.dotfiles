@@ -114,10 +114,6 @@ fi
 mkdir -p $HOME/gocode
 mkdir -p $HOME/workspace
 
-for entry in config zsh_profile zshrc tmux.conf gitconfig gitignore; do
-  rm -rf $HOME/.$entry && ln -s $HOME/.dotfiles/$entry $HOME/.$entry
-done
-
 # install go thing
 (
   export PATH=/usr/local/go/bin:$PATH
@@ -126,7 +122,13 @@ done
   go get -u github.com/nsf/gocode
   go get -u github.com/shurcooL/markdownfmt
   go get -u github.com/pocke/lemonade
+  go get -u github.com/getantibody/antibody/cmd/antibody
 )
+
+antibody bundle < bundles.txt >> zsh_bundle.sh
+for entry in config zsh_profile zshrc tmux.conf gitconfig gitignore; do
+  rm -rf $HOME/.$entry && ln -s $HOME/.dotfiles/$entry $HOME/.$entry
+done
 
 if [[ $platform == 'darwin' ]]; then
 	ln -sf $HOME/.dotfiles/LaunchAgents/local.lemonade.plist $HOME/Library/LaunchAgents/local.lemonade.plist
