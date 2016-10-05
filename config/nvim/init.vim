@@ -20,11 +20,8 @@ Plug 'moorereason/vim-markdownfmt'
 Plug 'rust-lang/rust.vim'
 Plug 'klen/python-mode'
 Plug 'racer-rust/vim-racer'
-Plug 'joshdick/onedark.vim'
-Plug 'w0ng/vim-hybrid'
 Plug 'nanotech/jellybeans.vim'
 Plug 'morhetz/gruvbox'
-Plug 'zefei/cake16'
 Plug 'Yggdroot/indentLine'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -32,8 +29,9 @@ Plug 'junegunn/fzf.vim'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
-Plug 'svermeulen/vim-easyclip'
 Plug 'tpope/vim-repeat'
+Plug 'vim-scripts/YankRing.vim'
+Plug 'jlanzarotta/bufexplorer'
 call plug#end()
 
 filetype plugin indent on
@@ -71,7 +69,6 @@ set textwidth=79       " Default maximum textwidth is 79
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-set cursorline         " highlight current line
 colorscheme gruvbox
 let g:lightline = { 'colorscheme': 'gruvbox' }
 
@@ -207,12 +204,8 @@ nnoremap <silent> <leader>W :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl
 " NERDCommenter
 map <leader>/ <plug>NERDCommenterToggle<CR>
 
-" Insert hashrocket
-imap <C-L> <Space>=><Space>
-
 " fzf
 nmap <leader><leader> :Files<CR>
-nmap <leader>be :Buffers<CR>
 
 " grep
 if executable('rg')
@@ -245,6 +238,11 @@ let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const
 let g:python_host_prog = '/usr/bin/python3'
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
+" Python
+let g:pymode_options_max_line_length = 120
+let g:pymode_lint_options_pep8 =
+      \ {'max_line_length': g:pymode_options_max_line_length}
+
 " JSON
 let g:vim_json_syntax_conceal = 0
 
@@ -267,6 +265,7 @@ au BufNewFile,BufRead *.go set nolist
 au BufNewFile,BufRead *.txt setfiletype text
 au BufNewFile,BufRead *.hbs set syntax=mustache
 au BufNewFile,BufRead *.pde set filetype=c syntax=c cindent
+au BufNewFile,BufRead *.php setlocal tabstop=4 softtabstop=4 shiftwidth=4
 au BufNewFile,BufRead *.html set textwidth=999
 au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=120 syntax=off
 au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru} set ft=ruby
