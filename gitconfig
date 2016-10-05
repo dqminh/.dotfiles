@@ -7,7 +7,8 @@
   d = diff --patch-with-stat
   # Pull in remote changes for the current repository and all its submodules
   p = !"git pull; git submodule foreach git pull origin master"
-  pr = !"pr() { git fetch origin pull/$1/head:pr-$1; git checkout pr-$1; }; pr"
+  pr = pull --rebase
+  pro = !"pr() { git fetch origin pull/$1/head:pr-$1; git checkout pr-$1; }; pr"
   pru  = !"pr() { git fetch upstream pull/$1/head:pr-$1; git checkout pr-$1; }; pr"
   # Clone a repository including all submodules
   c = clone --recursive
@@ -19,7 +20,6 @@
   undopush = push -f origin HEAD^:master
   st = status
   co = checkout
-  pr = pull --rebase
   cs = commit -s
 
   # golang codereview
