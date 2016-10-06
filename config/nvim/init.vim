@@ -238,6 +238,12 @@ let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
 let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
 let g:python_host_prog = '/usr/bin/python3'
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+function Multiple_cursors_before()
+  let g:deoplete#disable_auto_complete = 1
+endfunction
+function Multiple_cursors_after()
+  let g:deoplete#disable_auto_complete = 0
+endfunction
 
 " Python
 let g:pymode_options_max_line_length = 120
