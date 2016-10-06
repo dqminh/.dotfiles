@@ -8,8 +8,8 @@
   # Pull in remote changes for the current repository and all its submodules
   p = !"git pull; git submodule foreach git pull origin master"
   pr = pull --rebase
-  pro = !"pr() { git fetch origin pull/$1/head:pr-$1; git checkout pr-$1; }; pr"
-  pru  = !"pr() { git fetch upstream pull/$1/head:pr-$1; git checkout pr-$1; }; pr"
+  pro = !"gitpro() { git fetch origin pull/$1/head:pr-$1; git checkout pr-$1; }; gitpro"
+  pru  = !"gitpru() { git fetch upstream pull/$1/head:pr-$1; git checkout pr-$1; }; gitpru"
   # Clone a repository including all submodules
   c = clone --recursive
   # Commit all changes
