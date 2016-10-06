@@ -32,6 +32,7 @@ Plug 'zchee/deoplete-jedi'
 Plug 'tpope/vim-repeat'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'jlanzarotta/bufexplorer'
+Plug 'terryma/vim-multiple-cursors'
 call plug#end()
 
 filetype plugin indent on
@@ -252,6 +253,13 @@ let $RUST_SRC_PATH="/usr/local/rust/src/"
 
 " Cfmt
 let g:cfmt_style = '-linux'
+
+" multi cursor mapping
+let g:multi_cursor_use_default_mapping=0
+let g:multi_cursor_next_key='<C-s>'
+let g:multi_cursor_prev_key='<C-d>'
+let g:multi_cursor_skip_key='<C-x>'
+let g:multi_cursor_quit_key='<Esc>'
 
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
