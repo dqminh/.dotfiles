@@ -3,36 +3,36 @@
 set encoding=utf-8
 
 call plug#begin()
-Plug 'fatih/vim-go'
-Plug 'ntpeters/vim-better-whitespace'
-Plug 'godlygeek/tabular'
 Plug 'Raimondi/delimitMate'
-Plug 'scrooloose/nerdcommenter'
-Plug 'scrooloose/nerdtree'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-endwise'
-Plug 'plasticboy/vim-markdown'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'Yggdroot/indentLine'
 Plug 'crosbymichael/vim-cfmt'
 Plug 'elzr/vim-json'
-Plug 'moorereason/vim-markdownfmt'
-Plug 'rust-lang/rust.vim'
-Plug 'klen/python-mode'
-Plug 'racer-rust/vim-racer'
-Plug 'nanotech/jellybeans.vim'
-Plug 'morhetz/gruvbox'
-Plug 'Yggdroot/indentLine'
+Plug 'fatih/vim-go'
+Plug 'godlygeek/tabular'
 Plug 'itchyny/lightline.vim'
+Plug 'jdkanani/vim-material-theme'
+Plug 'jlanzarotta/bufexplorer'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'klen/python-mode'
+Plug 'moorereason/vim-markdownfmt'
+Plug 'morhetz/gruvbox'
+Plug 'nanotech/jellybeans.vim'
+Plug 'ntpeters/vim-better-whitespace'
+Plug 'plasticboy/vim-markdown'
+Plug 'racer-rust/vim-racer'
+Plug 'rust-lang/rust.vim'
+Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-unimpaired'
+Plug 'vim-scripts/YankRing.vim'
 Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
-Plug 'tpope/vim-repeat'
-Plug 'vim-scripts/YankRing.vim'
-Plug 'jlanzarotta/bufexplorer'
-Plug 'terryma/vim-multiple-cursors'
 call plug#end()
 
 filetype plugin indent on
@@ -70,8 +70,9 @@ set textwidth=79       " Default maximum textwidth is 79
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme gruvbox
-let g:lightline = { 'colorscheme': 'gruvbox' }
+colorscheme material-theme
+" with material-theme display the split bar
+hi VertSplit guibg=bg guifg=bg
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -260,12 +261,9 @@ let $RUST_SRC_PATH="/usr/local/rust/src/"
 " Cfmt
 let g:cfmt_style = '-linux'
 
-" multi cursor mapping
-let g:multi_cursor_use_default_mapping=0
-let g:multi_cursor_next_key='<C-s>'
-let g:multi_cursor_prev_key='<C-d>'
-let g:multi_cursor_skip_key='<C-x>'
-let g:multi_cursor_quit_key='<Esc>'
+" Markdown
+let g:vim_markdown_conceal = 0
+let g:vim_markdown_new_list_item_indent = 2
 
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
