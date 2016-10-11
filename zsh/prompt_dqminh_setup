@@ -26,7 +26,7 @@ function prompt_dqminh_setup() {
   zstyle ':vcs_info:git*' actionformats ' %b|%a'
 
   # Time: %F{yellow}%T
-  PROMPT='%F{magenta}%n@%m:%F{cyan}%1~%f${vcs_info_msg_0_}\
+  PROMPT='%F{yellow}%n@%m:%F{cyan}%1~%f${vcs_info_msg_0_}\
 %(!.%B%F{red}#%f%b.%B %(?.%F{green}.%F{red})❯%f%b) '
   RPROMPT=''
   SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
