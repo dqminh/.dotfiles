@@ -33,6 +33,8 @@ Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
+
+Plug 'ryanoasis/vim-devicons'
 call plug#end()
 
 filetype plugin indent on

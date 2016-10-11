@@ -1,0 +1,35 @@
+# Simple zsh prompt.
+#
+# dotfiles ❯ (default)
+# dotfiles master ❯ (in git repository)
+# root@serv dotfiles master ❯ (with SSH)
+#
+# * is prepended to git branch name if repo is dirty.
+# ❯ is green or red depending on previous command exit status.
+
+function prompt_dqminh_precmd() {
+  vcs_info
+}
+
+function prompt_dqminh_setup() {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+  prompt_opts=(cr subst percent)
+
+  zmodload zsh/datetime
+  autoload -Uz add-zsh-hook
+  autoload -Uz vcs_info
+  add-zsh-hook precmd prompt_dqminh_precmd
+
+  zstyle ':vcs_info:*' enable git
+  zstyle ':vcs_info:git*' formats ' %b'
+  zstyle ':vcs_info:git*' actionformats ' %b|%a'
+
+  # Time: %F{yellow}%T
+  PROMPT='%F{magenta}%n@%m:%F{cyan}%1~%f${vcs_info_msg_0_}\
+%(!.%B%F{red}#%f%b.%B %(?.%F{green}.%F{red})❯%f%b) '
+  RPROMPT=''
+  SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+}
+
+prompt_dqminh_setup "$@"
