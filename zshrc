@@ -7,6 +7,7 @@ export PATH=$GOPATH/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
 export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 alias tree='tree -F'
 alias gl="git log --pretty=format:'%h - %an, %ar : %s'"
