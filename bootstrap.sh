@@ -174,6 +174,19 @@ install_config() {
   ln -sf ~/.dotfiles/config/nvim/init.vim ~/.vimrc
   ln -sf ~/.dotfiles/config/nvim/autoload ~/.config/nvim/autoload
 
+  # install system service
+  local system_services=(
+  apple-hid
+  )
+  for service in "${system_services[@]}"; do
+    sudo ln -sf ~/.dotfiles/etc/systemd/system/$service.service /etc/systemd/system/$service.service
+  done
+  sudo systemctl daemon-reload
+  for service in "${system_services[@]}"; do
+    sudo systemctl enable $service
+    sudo systemctl start $service
+  done
+
   # install user service
   mkdir -p ~/.config/systemd/user
   local services=(
