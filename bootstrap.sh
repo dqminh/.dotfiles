@@ -23,6 +23,7 @@ install_apt() {
 deb https://apt.dockerproject.org/repo ubuntu-xenial main
 EOF
 
+  # add docker pgp key
   sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 }
 
@@ -34,6 +35,7 @@ install_packages() {
     automake \
     bash-completion \
     bc \
+    build-essentials \
     bridge-utils \
     bzip2 \
     cgroupfs-mount \
@@ -55,6 +57,7 @@ install_packages() {
     libapparmor-dev \
     libc6-dev \
     libltdl-dev \
+    htop \
     libseccomp-dev \
     locales \
     lsof \
@@ -66,6 +69,12 @@ install_packages() {
     network-manager-openconnect-gnome \
     openconnect \
     openvpn \
+    python \
+    python-pip \
+    python-setuptools \
+    python3 \
+    python3-pip \
+    python3-setuptools \
     s3cmd \
     scdaemon \
     silversearcher-ag \
@@ -73,22 +82,15 @@ install_packages() {
     strace \
     sudo \
     tar \
+    tmux \
     tree \
     tzdata \
     unzip \
     xsel \
     xz-utils \
-    python \
-    python-pip \
-    python-setuptools \
-    python3 \
-    python3-pip \
-    python3-setuptools \
-    tmux \
     zip \
     zsh
 
-  sudo apt-get install -y tlp tlp-rdw
   sudo apt-get install -y docker-engine
   sudo apt-get install -y neovim
 
@@ -96,8 +98,10 @@ install_packages() {
   sudo apt-get autoclean
 
   # install neovim python client
-  pip2 install --upgrade neovim
-  pip3 install --upgrade neovim
+  pip2 install --upgrade pip
+  pip2 install --upgrade --user setuptools wheel neovim
+  pip3 install --upgrade pip
+  pip3 install --upgrade --user setuptools wheel neovim
 
   sudo update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
   sudo update-alternatives --auto vi
@@ -105,6 +109,14 @@ install_packages() {
   sudo update-alternatives --auto vim
   sudo update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
   sudo update-alternatives --auto editor
+
+  # install system-wide systemd services
+  sudo mkdir -p /etc/systemd/system/docker.service.d
+  sudo ln -sf ~/.dotfiles/etc/systemd/system/docker.service.d/override.conf \
+    /etc/systemd/system/docker.service.d/override.conf
+
+  sudo systemctl daemon-reload
+  sudo systemctl restart docker
 }
 
 install_user() {
@@ -112,6 +124,8 @@ install_user() {
   sudo gpasswd -a dqminh systemd-journal
   sudo gpasswd -a dqminh systemd-network
   sudo gpasswd -a dqminh docker
+
+  chsh -s /bin/zsh
 
   # add go path to secure path
   sudo tee -a /etc/sudoers <<EOF
@@ -139,7 +153,7 @@ install_go() {
 }
 
 install_config() {
-  configs=(
+  local configs=(
   zsh_profile
   zshrc
   tmux.conf
@@ -154,15 +168,49 @@ install_config() {
     ln -sf $HOME/.dotfiles/$conf $HOME/.$conf
   done
 
+  # install neovim configuration
   mkdir -p ~/.config/nvim
   ln -sf ~/.dotfiles/config/nvim/init.vim ~/.config/nvim/init.vim
   ln -sf ~/.dotfiles/config/nvim/init.vim ~/.vimrc
   ln -sf ~/.dotfiles/config/nvim/autoload ~/.config/nvim/autoload
 
+  # install user service
+  mkdir -p ~/.config/systemd/user
+  local services=(
+  xmodmap
+  ssh-agent
+  )
+  for service in "${services[@]}"; do
+    ln -sf ~/.dotfiles/config/systemd/user/$service.service ~/.config/systemd/user/$service.service
+  done
+
+  systemctl --user daemon-reload
+  for service in "${services[@]}"; do
+    systemctl --user enable $service
+    systemctl --user start $service
+  done
+}
+
+install_fonts() {
+  rm -rf ~/.fonts
   ln -sf ~/.dotfiles/fonts ~/.fonts
   fc-cache -fv
+}
 
-  chsh -s /usr/bin/zsh
+install_ubuntu() {
+  sudo apt-add-repository ppa:tista/adapta
+  sudo add-apt-repository ppa:snwh/pulp
+  sudo apt-get update
+  sudo apt-get install -y \
+    unity-tweak-tool \
+    numix-gtk-theme \
+    numix-icon-theme \
+    breeze-icon-theme \
+    arc-theme \
+    adapta-gtk-theme \
+    paper-icon-theme \
+    paper-cursor-theme
+    # paper-gtk-theme
 }
 
 main() {
@@ -176,8 +224,17 @@ main() {
     ( install_go )
     ( install_packages )
     ( install_user )
+  elif [[ $cmd == 'ubuntu' ]]; then
+    if cmd_exists "lsb_release"; then
+      local distro=$(lsb_release -i | awk '{print $3}')
+      if [[ $distro == "Ubuntu" ]]; then
+        ( install_ubuntu )
+      fi
+    fi
   elif [[ $cmd == 'config' ]]; then
     ( install_config )
+  elif [[ $cmd == 'fonts' ]]; then
+    ( install_fonts )
   fi
 }
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=fix apple keyboard
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'echo 0 > /sys/module/hid_apple/parameters/iso_layout'
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
