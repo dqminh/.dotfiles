@@ -1,7 +1,6 @@
 case $(uname) in
   Linux)
     if which gsettings >/dev/null; then
-      gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
     fi
     ;;
   Darwin)

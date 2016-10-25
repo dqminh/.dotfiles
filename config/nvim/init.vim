@@ -74,7 +74,7 @@ set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 colorscheme material-theme
 " with material-theme display the split bar
-hi VertSplit guibg=bg guifg=bg
+hi VertSplit guibg=bg guifg=fg
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
