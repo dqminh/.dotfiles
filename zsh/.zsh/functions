@@ -1,0 +1,23 @@
+# convert bytes to human readable text
+function byteme()
+{
+  SLIST="bytes,KB,MB,GB,TB,PB,EB,ZB,YB"
+  POWER=1
+  DATA=$(cat)
+  VAL=$( echo "scale=2; $DATA / 1" | bc)
+  VINT=$( echo $VAL / 1024 | bc )
+  while [ ! $VINT = "0" ]
+  do
+    let POWER=POWER+1
+    VAL=$( echo "scale=2; $VAL / 1024" | bc)
+    VINT=$( echo $VAL / 1024 | bc )
+  done
+  echo $VAL$( echo $SLIST | cut -f$POWER -d, )
+}
+
+function rmi_none()              { docker rmi $(docker images | grep "<none>" | awk '{ print $3}'); }
+function clean_merged_branches() { git branch --merged | grep -v "\*" | xargs -n 1 git branch -d; }
+function linecount()             { find . -name "*.$1" | xargs wc -l; }
+function find_replace()          { pt -l "$1" | xargs perl -pi -E "s/$1/$2/g"; }
+function go_doc()                { godoc -http="localhost:6060"; }
+function gocd()                  { cd `go list -f '{{.Dir}}' $1`; }

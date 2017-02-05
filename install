@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+stow tmux
+stow vim
+stow zsh

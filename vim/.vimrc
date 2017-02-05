@@ -3,26 +3,6 @@
 set encoding=utf-8
 
 call plug#begin()
-Plug 'Raimondi/delimitMate'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'Yggdroot/indentLine'
-Plug 'crosbymichael/vim-cfmt'
-Plug 'elzr/vim-json'
-Plug 'fatih/vim-go'
-Plug 'godlygeek/tabular'
-Plug 'itchyny/lightline.vim'
-Plug 'jdkanani/vim-material-theme'
-Plug 'jlanzarotta/bufexplorer'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'klen/python-mode'
-Plug 'moorereason/vim-markdownfmt'
-Plug 'morhetz/gruvbox'
-Plug 'nanotech/jellybeans.vim'
-Plug 'ntpeters/vim-better-whitespace'
-Plug 'plasticboy/vim-markdown'
-Plug 'racer-rust/vim-racer'
-Plug 'rust-lang/rust.vim'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-endwise'
@@ -31,10 +11,32 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/YankRing.vim'
-Plug 'zchee/deoplete-go', { 'do': 'make'}
-Plug 'zchee/deoplete-jedi'
-
 Plug 'ryanoasis/vim-devicons'
+Plug 'Raimondi/delimitMate'
+Plug 'Yggdroot/indentLine'
+Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
+Plug 'junegunn/fzf', {'dir': '~/.fzf', 'do': './install --all'}
+Plug 'junegunn/fzf.vim'
+Plug 'jlanzarotta/bufexplorer'
+Plug 'crosbymichael/vim-cfmt'
+Plug 'godlygeek/tabular'
+Plug 'itchyny/lightline.vim'
+
+" Plug 'elzr/vim-json'
+" Plug 'jdkanani/vim-material-theme'
+
+" Plug 'klen/python-mode'
+" Plug 'moorereason/vim-markdownfmt'
+" Plug 'morhetz/gruvbox'
+" Plug 'nanotech/jellybeans.vim'
+" Plug 'ntpeters/vim-better-whitespace'
+" Plug 'plasticboy/vim-markdown'
+" Plug 'racer-rust/vim-racer'
+" Plug 'rust-lang/rust.vim'
+
+" Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Plug 'zchee/deoplete-go', { 'do': 'make'}
+" Plug 'zchee/deoplete-jedi'
 call plug#end()
 
 filetype plugin indent on
@@ -54,7 +56,7 @@ if has('clipboard')
   endif
 endif
 
-set termguicolors
+" set termguicolors
 set number             " Show line number
 set encoding=utf-8     " Enable utf-8 encoding by default
 set nobackup           " Disable backup file
@@ -68,13 +70,13 @@ set history=1000       " Sets how many lines of history vim has to remember
 set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
-" Theme
+" " Theme
 set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-colorscheme material-theme
-" with material-theme display the split bar
-hi VertSplit guibg=bg guifg=bg
+" colorscheme material-theme
+" " with material-theme display the split bar
+" hi VertSplit guibg=bg guifg=bg
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -235,18 +237,6 @@ nnoremap - <c-x>
 
 " Goimport
 let g:go_fmt_command = "goimports"
-
-" deoplete.vim
-let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
-let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
-let g:python_host_prog = '/usr/bin/python3'
-inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
-function Multiple_cursors_before()
-  let g:deoplete#disable_auto_complete = 1
-endfunction
-function Multiple_cursors_after()
-  let g:deoplete#disable_auto_complete = 0
-endfunction
 
 " Python
 let g:pymode_options_max_line_length = 120
