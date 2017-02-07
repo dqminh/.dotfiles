@@ -1,0 +1,89 @@
+[alias]
+  # View the SHA, description, and history graph of the latest 20 commits
+  l = log --pretty=oneline -n 20 --graph
+  # View the current working tree status using the short format
+  s = status -s
+  # Diff
+  d = diff --patch-with-stat
+  # Pull in remote changes for the current repository and all its submodules
+  p = !"git pull; git submodule foreach git pull origin master"
+  pr = pull --rebase
+  pro = !"gitpro() { git fetch origin pull/$1/head:pr-$1; git checkout pr-$1; }; gitpro"
+  pru  = !"gitpru() { git fetch upstream pull/$1/head:pr-$1; git checkout pr-$1; }; gitpru"
+  prstash = !"prstash() { git fetch origin refs/pull-requests/$1/from:pr-$1; git checkout pr-$1; }; prstash"
+  # Clone a repository including all submodules
+  c = clone --recursive
+  # Commit all changes
+  ca = !git add . && git add -u && git commit -a
+  # Switch to a branch, creating it if necessary
+  go = checkout -B
+  # Undo a `git push`
+  undopush = push -f origin HEAD^:master
+  st = status
+  co = checkout
+  cs = commit -s
+
+  # golang codereview
+  change = codereview change
+  gofmt = codereview gofmt
+  mail = codereview mail
+  pending = codereview pending
+  submit = codereview submit
+  sync = codereview sync
+[core]
+  # Use custom `.gitignore` and `.gitattributes`
+  excludesfile = ~/.gitignore
+  attributesfile = ~/.gitattributes
+  # Treat spaces before tabs, lines that are indented with 8 or more spaces, and all kinds of trailing whitespace as an error
+  whitespace = space-before-tab,indent-with-non-tab,trailing-space
+  editor = vim
+[color]
+  # Use colors in Git commands that are capable of colored output when outputting to the terminal
+  ui = auto
+  [color "branch"]
+  current = yellow reverse
+  local = yellow
+  remote = green
+  [color "diff"]
+  meta = yellow bold
+  frag = magenta bold
+  old = red bold
+  new = green bold
+  [color "status"]
+  added = yellow
+  changed = green
+  untracked = cyan
+  [merge]
+  # Include summaries of merged commits in newly created merge commit messages
+  log = true
+# Use `origin` as the default remote on the `master` branch in all cases
+[branch "master"]
+  remote = origin
+  merge = refs/heads/master
+# URL shorthands
+[url "git@github.com:"]
+  insteadOf = "gh:"
+  pushInsteadOf = "github:"
+  pushInsteadOf = "git://github.com/"
+[url "git://github.com/"]
+  insteadOf = "github:"
+[url "git@gist.github.com:"]
+  insteadOf = "gst:"
+  pushInsteadOf = "gist:"
+  pushInsteadOf = "git://gist.github.com/"
+[url "git://gist.github.com/"]
+  insteadOf = "gist:"
+[user]
+  name = Daniel Dao
+  email = dqminh89@gmail.com
+  signingkey = E59A5D531B20D399
+[push]
+  default = current
+[rerere]
+  enabled = 1
+[http]
+  cookiefile = /Users/dqminh/.gitcookies
+[web]
+  browser = open
+[commit]
+  gpgsign = true

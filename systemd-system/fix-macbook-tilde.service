@@ -1,0 +1,9 @@
+[Unit]
+Description=Fix Macbook Tilde key
+
+[Service]
+ExecStart=/usr/bin/sh -c 'echo 0 > /sys/module/hid_apple/parameters/iso_layout'
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

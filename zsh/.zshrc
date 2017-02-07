@@ -3,11 +3,9 @@ bindkey -e # use emacs mode explicitly
 # User configuration
 export EDITOR='vim'
 export GOPATH=$HOME
-export PATH=$HOME/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
-export PATH=$HOME/.cargo/bin:$PATH
+export PATH=$HOME/bin:$HOME/.bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
 export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-export TERM=xterm-256color
 source $HOME/.cargo/env
 
 alias tree='tree -F'
@@ -17,7 +15,10 @@ alias ta='tmux a -t'
 alias tl='tmux list-sessions'
 alias pbcopy='xclip -i -sel clip > /dev/null'
 alias pbpaste='xclip -o -sel clip'
-alias ls='ls -lh --color=auto'
+alias ls='ls -lah --color=auto'
+alias open='xdg-open'
+alias vi='nvim'
+alias vim='nvim'
 
 load=(
   ~/.zshrc.local

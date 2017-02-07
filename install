@@ -1,6 +1,69 @@
 #!/bin/bash
 set -e
 
-stow tmux
-stow vim
-stow zsh
+CMD=$1
+GO_VERSION=1.7.5
+
+install_go() {
+  if [[ ! `/usr/local/go/bin/go version` =~ "go${GO_VERSION}" ]]; then
+    echo "install go ${GO_VERSION}"
+    sudo rm -rf /usr/local/go
+    wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
+      sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
+      rm -rf /tmp/go.tar.gz
+  fi
+  (
+  export PATH=/usr/local/go/bin:$PATH
+  export GOPATH=$HOME
+  export GOBIN=$HOME/bin
+  go get -u github.com/nsf/gocode
+  go get -u github.com/shurcooL/markdownfmt
+  go get -u github.com/getantibody/antibody/cmd/antibody
+  )
+}
+
+install_config() {
+  stow tmux
+  stow vim
+  stow zsh
+  stow bin
+}
+
+install_system_config() {
+  sudo cp systemd-system/fix-macbook-tilde.service /usr/lib/systemd/system/fix-macbook-tilde.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable fix-macbook-tilde.service
+  sudo systemctl restart fix-macbook-tilde.service
+}
+
+install_fonts() {
+  stow fonts
+  fc-cache -fv
+}
+
+install_packages() {
+  sudo dnf install \
+    gnome-tweak-tool
+}
+
+main() {
+  case $CMD in
+    fonts)
+      install_fonts
+      ;;
+    system)
+      install_system_config
+      ;;
+    packages)
+      install_packages
+      ;;
+    go)
+      install_go
+      ;;
+    *)
+      install_config
+      ;;
+  esac
+}
+
+main
