@@ -87,3 +87,5 @@
   browser = open
 [commit]
   gpgsign = true
+[gpg]
+  program = gpg2
