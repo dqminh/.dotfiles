@@ -3,7 +3,7 @@ bindkey -e # use emacs mode explicitly
 # User configuration
 export EDITOR='vim'
 export GOPATH=$HOME
-export PATH=$HOME/bin:$HOME/.bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
+export PATH=$HOME/bin:$HOME/.bin:$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
 export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 source $HOME/.cargo/env

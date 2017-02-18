@@ -6,7 +6,6 @@ call plug#begin()
 Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'godlygeek/tabular'
-Plug 'rafi/vim-tinyline'
 Plug 'jlanzarotta/bufexplorer'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'scrooloose/nerdcommenter'
@@ -19,6 +18,10 @@ Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'mhinz/vim-grepper'
 
+Plug 'majutsushi/tagbar'
+Plug 'airblade/vim-gitgutter'
+
+Plug 'lepture/vim-jinja'
 Plug 'crosbymichael/vim-cfmt'
 Plug 'elzr/vim-json', {'for': 'json'}
 Plug 'moorereason/vim-markdownfmt', {'for': 'markdown'}
@@ -28,8 +31,10 @@ Plug 'rust-lang/rust.vim', {'for': 'rust'}
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'fatih/vim-go', {'for': 'go'}
 Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
+Plug 'garyburd/go-explorer', {'for': 'go'}
 Plug 'zchee/deoplete-jedi', {'for': 'python'}
 Plug 'python-mode/python-mode', {'for': 'python'}
+Plug 'saltstack/salt-vim'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -268,6 +273,9 @@ endif
 " https://github.com/neovim/neovim/issues/2642
 let g:yankring_clipboard_monitor = 0
 
+" tagbar
+nmap <leader>tt :TagbarToggle<CR>
+
 "------------------------------------------------------------------------------
 " FILETYPES
 "------------------------------------------------------------------------------
@@ -275,7 +283,6 @@ let g:yankring_clipboard_monitor = 0
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.go set nolist
-au BufNewFile,BufRead *.sls setlocal ft=yaml
 au BufNewFile,BufRead *.txt setfiletype text
 au BufNewFile,BufRead *.hbs set syntax=mustache
 au BufNewFile,BufRead *.pde set filetype=c syntax=c cindent
