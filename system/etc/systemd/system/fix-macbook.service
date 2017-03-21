@@ -1,0 +1,10 @@
+[Unit]
+Description=Fix Macbook
+
+[Service]
+ExecStart=/bin/sh -c 'echo 0 > /sys/module/hid_apple/parameters/iso_layout'
+ExecStart=/bin/sh -c 'echo XHC1 > /proc/acpi/wakeup'
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

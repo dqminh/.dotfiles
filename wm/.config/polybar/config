@@ -1,0 +1,126 @@
+[nord]
+nord0  = #2E3440
+nord1  = #3B4252
+nord2  = #434C5E
+nord3  = #4C566A
+nord4  = #D8DEE9
+nord5  = #E5E9F0
+nord6  = #ECEFF4
+nord7  = #8FBCBB
+nord8  = #88C0D0
+nord9  = #81A1C1
+nord10 = #5E81AC
+nord11 = #BF616A
+nord12 = #D08770
+nord13 = #EBCB8B
+nord14 = #A3BE8C
+nord15 = #B48EAD
+
+[colors]
+bg = ${nord.nord0}
+bg-alt = ${nord.nord3}
+active = ${nord.nord7}
+fg = ${nord.nord4}
+
+[settings]
+screenchange-reload = true
+
+[bar/top]
+width = 100%
+height = 40
+background = ${colors.bg}
+foreground = ${colors.fg}
+underline-size = 2
+underline-color = ${colors.active}
+
+padding-left = 0
+padding-right = 1
+module-margin-left = 1
+module-margin-right = 1
+
+font-0 = SauceCodePro Nerd Font:size=16
+
+modules-left = workspace
+modules-center = title
+modules-right = volume battery wireless-network date
+
+[bar/top-external]
+inherit = bar/top
+monitor = ${env:MONITOR:DP1}
+
+[bar/top-laptop]
+inherit = bar/top
+monitor = ${env:MONITOR:eDP1}
+
+[module/title]
+type = internal/xwindow
+label = Window: %title%
+label-maxlen = 50
+
+[module/wireless-network]
+type = internal/network
+interface = wlp3s0
+label-connected =  %essid%
+format-connected-foreground = ${colors.active}
+
+[module/workspace]
+type = internal/xworkspaces
+
+; label-mode = %mode%
+; label-mode-padding = 2
+; label-mode-foreground = ${colors.fg}
+; label-mode-background = ${colors.bg}
+; ; focused = Active workspace on focused monitor
+; label-focused = %index%
+label-active-background = ${colors.bg-alt}
+label-active-underline = ${colors.active}
+; ; unfocused = Inactive workspace on any monitor
+; label-unfocused = %index%
+label-occupied-underline = ${colors.fg}
+; ; visible = Active workspace on unfocused monitor
+; label-visible = %index%
+; label-visible-underline = ${colors.fg}
+; label-visible-padding = ${self.label-focused-padding}
+label-urgent-underline = ${colors.active}
+
+[module/date]
+type = internal/date
+label = %date% %time%
+date = %Y-%m-%d
+time = %H:%M
+interval = 5
+
+[module/volume]
+type = internal/volume
+label-volume = volume %percentage%%
+label-volume-font = 3
+label-muted = sound muted
+label-muted-font = 3
+label-muted-foreground = ${colors.bg-alt}
+
+[module/battery]
+type = internal/battery
+full-at = 99
+poll-interval = 5
+
+format-charging = <animation-charging><label-charging>
+format-discharging = <ramp-capacity><label-discharging>
+format-full = <ramp-capacity><label-full>
+label-charging = %percentage%
+label-discharging = %percentage%
+label-full = %percentage%
+
+ramp-capacity-0 = 
+ramp-capacity-1 = 
+ramp-capacity-2 = 
+ramp-capacity-3 = 
+ramp-capacity-4 = 
+
+animation-charging-0 = 
+animation-charging-1 = 
+animation-charging-2 = 
+animation-charging-3 = 
+animation-charging-4 = 
+animation-charging-framerate = 750
+
+; vim:ft=dosini

@@ -3,6 +3,9 @@
 set encoding=utf-8
 
 call plug#begin()
+Plug 'google/vim-maktaba'
+Plug 'google/vim-codefmt'
+
 Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'godlygeek/tabular'
@@ -15,8 +18,8 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
-Plug 'vim-scripts/YankRing.vim'
 Plug 'mhinz/vim-grepper'
+Plug 'vim-scripts/YankRing.vim'
 
 Plug 'majutsushi/tagbar'
 Plug 'airblade/vim-gitgutter'
@@ -34,7 +37,11 @@ Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
 Plug 'garyburd/go-explorer', {'for': 'go'}
 Plug 'zchee/deoplete-jedi', {'for': 'python'}
 Plug 'python-mode/python-mode', {'for': 'python'}
+Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
+
+Plug 'neovimhaskell/haskell-vim'
+Plug 'alx741/vim-hindent'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -42,6 +49,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'nanotech/jellybeans.vim'
 Plug 'jacoborus/tender.vim'
 Plug 'ryanoasis/vim-devicons'
+Plug 'arcticicestudio/nord-vim'
+Plug 'itchyny/lightline.vim'
 call plug#end()
 
 filetype plugin indent on
@@ -54,11 +63,7 @@ set backspace=indent,eol,start " allow backspacing over everything in insert mod
 " Writes to the unnamed register also writes to the * and + registers. This
 " makes it easy to interact with the system clipboard
 if has('clipboard')
-  if has ('unnamedplus')
-    set clipboard=unnamedplus
-  else
-    set clipboard=unnamed
-  endif
+  set clipboard+=unnamedplus
 endif
 
 set termguicolors
@@ -201,6 +206,7 @@ let NERDTreeMinimalUI=1
 let NERDTREEWinSize=30
 nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
+let NERDTreeIgnore = ['\.pyc$', '^__pycache__$']
 
 " Fugitive
 nnoremap <leader>gb :Gblame<CR>
@@ -244,12 +250,13 @@ let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
 let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
 let g:python_host_prog = '/usr/bin/python'
 let g:python3_host_prog = '/usr/bin/python3'
+inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " Python
+let g:pymode_rope_completion = 0
 let g:pymode_options_max_line_length = 120
 let g:pymode_lint_options_pep8 =
       \ {'max_line_length': g:pymode_options_max_line_length}
-inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " JSON
 let g:vim_json_syntax_conceal = 0
@@ -276,9 +283,21 @@ let g:yankring_clipboard_monitor = 0
 " tagbar
 nmap <leader>tt :TagbarToggle<CR>
 
+" lightline
+let g:lightline = { 'colorscheme': 'nord' }
+
 "------------------------------------------------------------------------------
 " FILETYPES
 "------------------------------------------------------------------------------
+
+augroup autoformat_settings
+  autocmd FileType bzl AutoFormatBuffer buildifier
+  autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+  autocmd FileType dart AutoFormatBuffer dartfmt
+  autocmd FileType html,css,json AutoFormatBuffer js-beautify
+  autocmd FileType java AutoFormatBuffer google-java-format
+  autocmd FileType python AutoFormatBuffer yapf
+augroup END
 
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab

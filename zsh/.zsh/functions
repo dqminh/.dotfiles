@@ -21,3 +21,19 @@ function linecount()             { find . -name "*.$1" | xargs wc -l; }
 function find_replace()          { pt -l "$1" | xargs perl -pi -E "s/$1/$2/g"; }
 function go_doc()                { godoc -http="localhost:6060"; }
 function gocd()                  { cd `go list -f '{{.Dir}}' $1`; }
+
+function socks5() {
+  if [ "${1}" = "" ]; then
+    echo "Usage: 'socks5 stop' or 'socks5 <endpoint>'" 1>&2
+  elif [ "${1}" = "stop" ]; then
+    ssh -S ~/.ssh/socks5.sock -O exit whatever
+  else
+    if [ -e ~/.ssh/socks5.sock ]; then
+      echo "already connected, stop existing connection first" 1>&2
+    else
+      ssh -M -S ~/.ssh/socks5.sock -D 127.0.0.1:6666 -f -q -N "${1}"
+    fi
+  fi
+}
+
+function chrome-proxy { nohup google-chrome --proxy-server 127.0.0.1:6666 2>&1 >/dev/null & }

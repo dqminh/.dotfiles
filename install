@@ -2,7 +2,44 @@
 set -e
 
 CMD=$1
-GO_VERSION=1.7.5
+GO_VERSION=1.8
+NEOVIM_VERSION=0.1.7
+
+install_deps() {
+  sudo apt install -y \
+    autoconf \
+    automake \
+    build-essential \
+    cmake \
+    cmake \
+    g++ \
+    git \
+    htop \
+    libtool \
+    libtool-bin \
+    mercurial \
+    openconnect \
+    pkg-config \
+    jq \
+    stow \
+    libgtk-3-dev \
+    tmux \
+    unzip \
+    xclip \
+    zsh
+}
+
+install_neovim() {
+  rm -rf /tmp/neovim*
+  wget https://github.com/neovim/neovim/archive/v${NEOVIM_VERSION}.tar.gz -O /tmp/neovim.tar.gz && \
+    tar -C /tmp -xzf /tmp/neovim.tar.gz && \
+    cd /tmp/neovim-${NEOVIM_VERSION} && \
+    make CMAKE_BUILD_TYPE=Release && \
+    sudo make install && \
+    cd /tmp && \
+    rm -rf /tmp/neovim-${NEOVIM_VERSION} && \
+    rm -rf /tmp/neovim.tar.gz
+}
 
 install_go() {
   if [[ ! `/usr/local/go/bin/go version` =~ "go${GO_VERSION}" ]]; then
@@ -30,10 +67,17 @@ install_config() {
 }
 
 install_system_config() {
-  sudo cp systemd-system/fix-macbook-tilde.service /usr/lib/systemd/system/fix-macbook-tilde.service
+  sudo cp system/etc/systemd/system/* /etc/systemd/system/
+  sudo cp system/lib/systemd/system-sleep/* /lib/systemd/system-sleep/
+  sudo cp system/etc/default/* /etc/default
+
   sudo systemctl daemon-reload
-  sudo systemctl enable fix-macbook-tilde.service
-  sudo systemctl restart fix-macbook-tilde.service
+  sudo systemctl enable fix-macbook.service
+  sudo systemctl enable ubuntu-wifi-resume.service
+  sudo systemctl restart fix-macbook.service
+
+  # make sure that we have persistent journal next reboot
+  sudo mkdir -p /var/log/journal
 }
 
 install_fonts() {
@@ -48,6 +92,9 @@ install_packages() {
 
 main() {
   case $CMD in
+    deps)
+      install_deps
+      ;;
     fonts)
       install_fonts
       ;;
@@ -59,6 +106,9 @@ main() {
       ;;
     go)
       install_go
+      ;;
+    nvim|neovim)
+      install_neovim
       ;;
     *)
       install_config
