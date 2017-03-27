@@ -1,5 +1,5 @@
 config/*
-!vim/.config/nvim/init.vim
-!vim/.config/nvim/autoload/*
-vim/.config/nvim/plugged
+!user/.config/nvim/init.vim
+!user/.config/nvim/autoload/*
+user/.config/nvim/plugged
 zsh_bundle.sh
