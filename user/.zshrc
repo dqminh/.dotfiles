@@ -27,6 +27,8 @@ if [[ "$platform" == 'linux' ]]; then
   alias pbcopy='xclip -i -sel clip > /dev/null'
   alias pbpaste='xclip -o -sel clip'
   alias open='xdg-open'
+elif [[ `uname` == 'Darwin' ]]; then
+  alias vmlinux='ssh -A linux'
 fi
 
 load=(
