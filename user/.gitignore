@@ -8,3 +8,7 @@ build/*
 .vagrant*
 .ropeproject
 *.log
+target/
+**/*.rs.bk
+Cargo.lock
+*.test

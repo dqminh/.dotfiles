@@ -2,10 +2,21 @@
 " This must be first, because it changes other options as a side effect.
 set encoding=utf-8
 
+function! BuildYCM(info)
+  " info is a dictionary with 3 fields
+  " - name:   name of the plugin
+  " - status: 'installed', 'updated', or 'unchanged'
+  " - force:  set on PlugInstall! or PlugUpdate!
+  if a:info.status == 'installed' || a:info.force
+    !./install.py --clang-completer --gocode-completer --tern-completer --racer-completer
+  endif
+endfunction
+
 call plug#begin()
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
 
+Plug 'Valloric/YouCompleteMe', { 'do': function('BuildYCM') }
 Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'godlygeek/tabular'
@@ -31,14 +42,15 @@ Plug 'moorereason/vim-markdownfmt', {'for': 'markdown'}
 Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
 Plug 'racer-rust/vim-racer', {'for': 'rust'}
 Plug 'rust-lang/rust.vim', {'for': 'rust'}
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'fatih/vim-go'
-Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
 Plug 'garyburd/go-explorer', {'for': 'go'}
-Plug 'zchee/deoplete-jedi', {'for': 'python'}
 Plug 'python-mode/python-mode', {'for': 'python'}
 Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
+
+" Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
+" Plug 'zchee/deoplete-jedi', {'for': 'python'}
 
 Plug 'neovimhaskell/haskell-vim'
 Plug 'alx741/vim-hindent'
@@ -51,6 +63,10 @@ Plug 'jacoborus/tender.vim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'arcticicestudio/nord-vim'
 Plug 'liuchengxu/space-vim-dark'
+Plug 'yorickpeterse/happy_hacking.vim'
+Plug 'kristijanhusak/vim-hybrid-material'
+Plug 'mhartington/oceanic-next'
+Plug 'rakr/vim-one'
 Plug 'itchyny/lightline.vim'
 call plug#end()
 
@@ -68,6 +84,10 @@ if has('clipboard')
 endif
 
 set termguicolors
+" for true color inside tmux
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+
 set number             " Show line number
 set encoding=utf-8     " Enable utf-8 encoding by default
 set nobackup           " Disable backup file
@@ -82,7 +102,7 @@ set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
-" set background=dark
+set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 let g:jellybeans_use_gui_italics = 0
@@ -249,8 +269,8 @@ let g:go_fmt_command = "goimports"
 " deoplete.vim
 let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
 let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
-let g:python_host_prog = '/usr/bin/python'
-let g:python3_host_prog = '/usr/bin/python3'
+let g:python_host_prog = '/usr/local/bin/python'
+let g:python3_host_prog = '/usr/local/bin/python3'
 inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " Python
@@ -276,10 +296,6 @@ let g:vim_markdown_new_list_item_indent = 2
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
 endif
-
-" yankring
-" https://github.com/neovim/neovim/issues/2642
-let g:yankring_clipboard_monitor = 0
 
 " tagbar
 nmap <leader>tt :TagbarToggle<CR>

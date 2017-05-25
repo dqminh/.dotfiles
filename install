@@ -2,7 +2,7 @@
 set -e
 
 CMD=$1
-GO_VERSION=1.8
+GO_VERSION=1.8.1
 NEOVIM_VERSION=0.1.7
 
 install_packages() {
@@ -60,14 +60,13 @@ install_go() {
     wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
       sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
       rm -rf /tmp/go.tar.gz
+    sudo chown -R dqminh /usr/local/go
   fi
   (
   export PATH=/usr/local/go/bin:$PATH
   export GOPATH=$HOME
   export GOBIN=$HOME/bin
   go get -u github.com/nsf/gocode
-  go get -u github.com/shurcooL/markdownfmt
-  go get -u github.com/getantibody/antibody/cmd/antibody
   )
 }
 
@@ -99,6 +98,9 @@ main() {
     fonts)
       install_user
       install_fonts
+      ;;
+    user)
+      install_user
       ;;
     system)
       install_system_config
