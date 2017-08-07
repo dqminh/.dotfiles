@@ -1,0 +1,19 @@
+!-- Xft settings -- !
+Xft.dpi:        144
+Xft.rgba:       rgb
+Xft.autohint:   0
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintslight
+Xft.hinting:    1
+Xft.antialias:  1
+
+URxvt*font: xft:InconsolataGo Nerd Font:size=10,style=regular
+URxvt.scrollBar: false
+URxvt.internalBorder: 10
+
+! Enables copy/paste with Ctrl-Shift-C/V
+URxvt.iso14755: false
+URxvt.iso14755_52: false
+URxvt.perl-ext-common: default,clipboard
+URxvt.keysym.Shift-Control-C: perl:clipboard:copy
+URxvt.keysym.Shift-Control-V: perl:clipboard:paste
