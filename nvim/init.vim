@@ -256,8 +256,8 @@ let g:go_fmt_command = "goimports"
 " deoplete.vim
 let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
 let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
-let g:python_host_prog = '/usr/local/bin/python'
-let g:python3_host_prog = '/usr/local/bin/python3'
+let g:python_host_prog = '/usr/bin/python'
+let g:python3_host_prog = '/usr/bin/python3'
 inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " Python
@@ -288,7 +288,7 @@ endif
 nmap <leader>tt :TagbarToggle<CR>
 
 " lightline
-let g:lightline = { 'colorscheme': 'nord' }
+let g:lightline = { 'colorscheme': 'jellybeans' }
 
 "------------------------------------------------------------------------------
 " FILETYPES

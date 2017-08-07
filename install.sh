@@ -60,6 +60,8 @@ lang::go() {
 }
 
 core() {
+	srun add-apt-repository ppa:neovim-ppa/stable
+
     install::apt \
 		build-essential \
         git \
@@ -71,14 +73,17 @@ core() {
 		python \
 		python3 \
 		neovim \
-		python-neovim \
-		python3-neovim \
+		python-pip \
+		python3-pip \
 		xclip
 
 	lang::rust
 	lang::go
 
 	srun mkdir -p /var/log/journal
+
+	pip install neovim
+	pip3 install neovim
 }
 
 apps::chrome() {
@@ -115,6 +120,9 @@ config::user() {
 			fc-cache -fv
 			;;
 		config)
+			link gpg/gpg.conf .gnupg
+			link gpg/gpg-agent.conf .gnupg
+
 			link .gitconfig
 			link .tmux.conf
 
