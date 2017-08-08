@@ -8,7 +8,7 @@ font pango:Inconsolata 9
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec urxvt
+bindsym $mod+Return exec xfce4-terminal
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -127,7 +127,7 @@ bindsym $mod+r mode "resize"
 
 # Power control mode
 set $power_control "[l]ock log[o]ut [s]uspend [h]ibernate [r]eboot [p]oweroff"
-mode  $power_control {
+mode $power_control {
     bindsym l exec ~/.i3/lock.sh; mode "default"
     bindsym o exec i3-msg exit; mode "default"
     bindsym s exec systemctl suspend; mode "default"
@@ -166,13 +166,10 @@ bindsym XF86AudioPrev exec ~/.i3/player-control.sh prev   && pkill -SIGRTMIN+3 i
 bindsym XF86AudioStop exec ~/.i3/player-control.sh stop   && pkill -SIGRTMIN+3 i3blocks
 
 # Applications
-bindsym $mod+i exec firefox
+bindsym $mod+i exec google-chrome
 
 # Borders
 for_window [class="^.*"] border pixel 2
-
-# Workspace assignment
-assign [class="Steam"] 5
 
 # Gaps
 gaps inner 6
@@ -188,22 +185,21 @@ client.unfocused        #323232 #323232 #ebdbb2 #323232
 client.focused_inactive #323232 #333333 #ebdbb2 #323232
 client.urgent           #383a3b #383a3b #ee0000 #383a3b
 
-# Start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
 bar {
-    status_command i3blocks -c ~/.i3/i3blocks.conf
+  status_command i3blocks # -c /home/dqminh/.config/.i3/i3blocks.conf
+  position top
 
-    colors {
-         background #282828
-         statusline #ebdbb2
-         separator  #756d59
+  #colors {
+  #     background #282828
+  #     statusline #ebdbb2
+  #     separator  #756d59
 
-                            #border backgr. text
-         focused_workspace  #676d3d #676d3d #ebdbb2
-         active_workspace   #323232 #5f676a #ebdbb2
-         inactive_workspace #323232 #323232 #888888
-         urgent_workspace   #333333 #900000 #ffffff
-    }
+  #                        #border backgr. text
+  #     focused_workspace  #676d3d #676d3d #ebdbb2
+  #     active_workspace   #323232 #5f676a #ebdbb2
+  #     inactive_workspace #323232 #323232 #888888
+  #     urgent_workspace   #333333 #900000 #ffffff
+  #}
 }
 
 exec setxkbmap -layout 'us' && setxkbmap -option 'ctrl:nocaps'

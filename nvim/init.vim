@@ -46,15 +46,8 @@ Plug 'junegunn/fzf.vim'
 " themes
 Plug 'nanotech/jellybeans.vim'
 Plug 'itchyny/lightline.vim'
-
-" Plug 'jacoborus/tender.vim'
-" Plug 'ryanoasis/vim-devicons'
-" Plug 'arcticicestudio/nord-vim'
-" Plug 'liuchengxu/space-vim-dark'
-" Plug 'yorickpeterse/happy_hacking.vim'
-" Plug 'kristijanhusak/vim-hybrid-material'
-" Plug 'mhartington/oceanic-next'
-" Plug 'rakr/vim-one'
+Plug 'morhetz/gruvbox'
+Plug 'w0ng/vim-hybrid'
 call plug#end()
 
 filetype plugin indent on
@@ -93,7 +86,9 @@ set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 let g:jellybeans_use_gui_italics = 0
-colorscheme jellybeans
+" colorscheme jellybeans
+" colorscheme gruvbox
+colorscheme hybrid
 " with material-theme display the split bar
 " hi VertSplit guibg=bg guifg=fg
 
@@ -210,6 +205,7 @@ nmap <leader>av :AV<CR>
 nmap <leader>aa :A<CR>
 
 " Nerdtree
+let NERDTreeShowHidden=1
 let NERDTreeMinimalUI=1
 let NERDTREEWinSize=30
 nmap <silent><leader>nt :NERDTreeToggle<CR>

@@ -1,56 +1,180 @@
 #!/bin/bash
+set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
 GO_VERSION=1.8.3
 RUST_VERSION=1.19.0
+USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
 
 run() {
 	local action=$1
 	shift
-	if [[ "$NOOP" == "true" ]]; then
-		echo "going to run: $action $@"
-	else
-		$action "$@"
-	fi
+	echo "run: $action $@"
+	[[ "$NOOP" == "true" ]] && return 0
+	$action "$@"
+}
+srun() { run sudo "$@" ; }
+
+link() { run ln -sf $CUR/$1 $HOME/$2 ; }
+slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
+
+# sets up apt sources
+# assumes you are going to use debian stretch
+apt_sources() {
+	srun apt-get update
+	srun apt-get install -y \
+		apt-transport-https \
+		ca-certificates \
+		curl \
+		wget \
+		--no-install-recommends
+
+	cat <<-EOF | sudo tee /etc/apt/sources.list.d/laptop.list
+# git
+deb http://ppa.launchpad.net/git-core/ppa/ubuntu zesty main
+deb-src http://ppa.launchpad.net/git-core/ppa/ubuntu zesty main
+
+deb http://ppa.launchpad.net/neovim-ppa/stable/ubuntu xenial main
+deb-src http://ppa.launchpad.net/neovim-ppa/stable/ubuntu xenial main
+
+deb https://atlassian.artifactoryonline.com/atlassian/hipchat-apt-client zesty main
+
+deb https://dl.google.com/linux/chrome/deb/ stable main
+
+deb [arch=amd64] https://download.docker.com/linux/ubuntu zesty stable
+
+deb https://packages.cloud.google.com/apt cloud-sdk-sid main
+EOF
+
+	# Import the Google Cloud Platform public key
+	srun sh -c "curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -"
+	# Import the Google Chrome public key
+	srun sh -c "curl https://dl.google.com/linux/linux_signing_key.pub | apt-key add -"
+	# add docker gpg key
+	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+	# add the git-core ppa gpg key
+	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
+
+	# add the neovim ppa gpg key
+	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DBB0BE9366964F134855E2255F96FCF8231B6DD
+
+	# turn off translations, speed up apt-get update
+	srun mkdir -p /etc/apt/apt.conf.d
+	srun sh -c "echo 'Acquire::Languages \"none\";' > /etc/apt/apt.conf.d/99translations"
 }
 
-srun() {
-	run sudo "$@"
+apt_pkg() {
+	srun apt-get update
+	srun apt-get -y upgrade
+
+	srun apt-get install -y \
+		adduser \
+		apparmor \
+		automake \
+		bash-completion \
+		bc \
+		bridge-utils \
+		build-essential \
+		bzip2 \
+		ca-certificates \
+		cgroupfs-mount \
+		coreutils \
+		curl \
+		dnsutils \
+		docker-ce \
+		findutils \
+		gcc \
+		git \
+		gnupg \
+		gnupg-agent \
+		gnupg2 \
+		google-chrome-stable \
+		google-cloud-sdk \
+		grep \
+		gzip \
+		hostname \
+		indent \
+		iptables \
+		jq \
+		less \
+		libapparmor-dev \
+		libc6-dev \
+		libltdl-dev \
+		libseccomp-dev \
+		locales \
+		lsof \
+		make \
+		mount \
+		neovim \
+		net-tools \
+		network-manager \
+		openconnect \
+		pinentry-curses \
+		python \
+		python-pip \
+		python3 \
+		python3-pip \
+		ranger \
+		s3cmd \
+		scdaemon \
+		ssh \
+		strace \
+		sudo \
+		tar \
+		tree \
+		tzdata \
+		unzip \
+		xclip \
+		xz-utils \
+		zip \
+        cmake \
+        mercurial \
+        pkg-config \
+		--no-install-recommends
+
+	srun apt-get install -y \
+		feh \
+		i3blocks \
+		scrot \
+		compton \
+		suckless-tools \
+		--no-install-recommends
+
+	# install tlp with recommends
+	srun apt-get install -y tlp tlp-rdw
+
+	srun apt-get autoremove
+	srun apt-get autoclean
+	srun apt-get clean
+
+	# setup groups
+	srun adduser "$USER" sudo
+	srun adduser "$USER" docker
+	srun adduser "$USER" systemd-journal
+
+	srun wget https://github.com/docker/compose/releases/download/1.14.0/docker-compose-`uname -s`-`uname -m` -O /usr/local/bin/docker-compose
+	srun chmod +x /usr/local/bin/docker-compose
+
+	# setup persistent journal
+	srun mkdir -p /var/log/journal
+
+	pip install neovim
+	pip3 install neovim
 }
 
-install::add_apt() {
-    local deb=$1
-    local key=$2
-    local name=$3
-    srun sh -c "echo $deb > /etc/apt/sources.list.d/$name.list"
-    srun sh -c "wget -O - $key | apt-key add -"
-}
-
-install::apt() {
-    srun apt-get update
-    srun apt-get install -y "$@"
-}
-
-link() {
-    local f=$1
-    local to=${2-$f}
-    local fn=$(basename $f)
-    if [[ -r "$HOME/to" && -d "$HOME/$to" ]]; then
-        run ln -sf $CUR/$f $HOME/$to/$fn
-    else
-        run ln -sf $CUR/$f $HOME/$to
-    fi
-}
-
-lang::rust() {
+rust_install() {
 	[[ `$HOME/.cargo/bin/rustc --version` =~ "${RUST_VERSION}" ]] && return 0
 	run sh -c "curl https://sh.rustup.rs -sSf | sh"
 }
 
-lang::go() {
+rust_pkg() {
+	run /home/dqminh/.cargo/bin/cargo install ripgrep
+}
+
+go_install() {
 	[[ `/usr/local/go/bin/go version` =~ "go${GO_VERSION}" ]] && return 0
 	srun rm -rf /usr/local/go
 	srun wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz
@@ -59,105 +183,88 @@ lang::go() {
 	srun chown -R dqminh /usr/local/go
 }
 
-core() {
-	srun add-apt-repository ppa:neovim-ppa/stable
-
-    install::apt \
-		build-essential \
-        git \
-        mercurial \
-        cmake \
-        pkg-config \
-		curl \
-		openconnect \
-		python \
-		python3 \
-		neovim \
-		python-pip \
-		python3-pip \
-		xclip
-
-	lang::rust
-	lang::go
-
-	srun mkdir -p /var/log/journal
-
-	pip install neovim
-	pip3 install neovim
+go_pkg() {
+	(
+	export GOPATH=/home/dqminh
+	run go get github.com/golang/lint/golint
+	run go get golang.org/x/tools/cmd/cover
+	run go get golang.org/x/review/git-codereview
+	run go get golang.org/x/tools/cmd/goimports
+	run go get golang.org/x/tools/cmd/gorename
+	run go get golang.org/x/tools/cmd/guru
+	run go get github.com/nsf/gocode
+	run go get github.com/rogpeppe/godef
+	run go get github.com/shurcooL/markdownfmt
+	)
 }
 
-apps::chrome() {
-	command_exists "google-chrome" && return 0
-	install::add_apt \
-		"deb https://dl.google.com/linux/chrome/deb/ stable main" \
-		"https://dl.google.com/linux/linux_signing_key.pub" \
-		google-chrome
-	install::apt google-chrome-stable
+fonts_install() {
+	mkdir -p $HOME/.local/share/fonts
+	link fonts .local/share/fonts
+	fc-cache -fv
 }
 
-apps::hipchat() {
-    command_exists "hipchat4" && return 0
-    install::add_apt \
-        "deb https://atlassian.artifactoryonline.com/atlassian/hipchat-apt-client $(lsb_release -c -s) main" \
-        "https://atlassian.artifactoryonline.com/atlassian/api/gpg/key/public" \
-        hipchat4
-    install::apt hipchat4
+config_install() {
+	declare -A configs=(
+	["gnupg/gpg.conf"]=".gnupg/gpg.conf"
+	["gnupg/gpg-agent.conf"]=".gnupg/gpg-agent.conf"
+	[".gitconfig"]=".gitconfig"
+	[".gitignore"]=".gitignore"
+	[".tmux.conf"]=".tmux.conf"
+	[".zshrc"]=".zshrc"
+	[".zsh"]=".zsh"
+	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
+	["nvim/init.vim"]=".config/nvim/init.vim"
+	["i3/config"]=".config/i3/config"
+	["compton/compton.conf"]=".config/compton.conf"
+	["user/systemd"]=".config/systemd/user"
+	)
+
+	run mkdir -p $HOME/.config/nvim
+	run mkdir -p $HOME/.config/nvim/autoload
+	run mkdir -p $HOME/.config/i3
+	run mkdir -p $HOME/.config/i3blocks
+	run mkdir -p $HOME/.config/systemd
+
+	for name in "${!configs[@]}"; do
+		link $name ${configs[$name]}
+	done
+
+	srun ln -sf $CUR/themes/hybrid.theme /usr/share/xfce4/terminal/colorschemes/hybrid.theme
 }
 
-#apps::wm() {
-#    sudo apt update
-#    sudo apt install -y \
-#        i3blocks \
-#        rofi
-#}
-
-config::user() {
-    local target=$1
-    case $target in
-		fonts)
-			mkdir -p $HOME/.local/share/fonts
-			link fonts .local/share/fonts
-			fc-cache -fv
-			;;
-		config)
-			link gpg/gpg.conf .gnupg
-			link gpg/gpg-agent.conf .gnupg
-
-			link .gitconfig
-			link .tmux.conf
-
-			link .zshrc
-			link .zsh
-
-			mkdir -p $HOME/.config/nvim
-			mkdir -p $HOME/.config/nvim/autoload
-			link nvim/autoload/plug.vim .config/nvim/autoload
-			link nvim/init.vim .config/nvim
-
-			mkdir -p $HOME/.config/i3
-			link .Xresources .Xresources
-			link .Xresources .Xdefaults
-			link i3/config .config/i3
-			link i3/i3blocks.conf .config/i3
-			;;
-    esac
+usage() {
+	echo "Usage:"
+	echo "  apt     - setup packages"
+	echo "  config  - setup config files"
+	echo "  golang  - setup go and packages"
+	echo "  rust    - setup rust and packages"
+	echo "  fonts   - setup fonts"
 }
 
 main() {
 	local target=$1
 	case $target in
-		core)
-			( core )
-			;;
-		apps)
-			( apps::chrome )
-			( apps::hipchat )
+		apt)
+			( apt_sources )
+			( apt_pkg )
 			;;
 		config)
-			( config::user config )
+			( config_install )
+			;;
+		go)
+			( go_install )
+			( go_pkg )
+			;;
+		rust)
+			( rust_install )
+			( rust_pkg )
 			;;
 		fonts)
-			( config::user fonts )
+			( fonts_install )
+			;;
+		*)
+			usage
 			;;
 	esac
 }
