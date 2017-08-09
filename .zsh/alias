@@ -1,0 +1,25 @@
+alias tree='tree -F'
+
+alias gl="git log --pretty=format:'%h - %an, %ar : %s'"
+
+alias tn='tmux new -s'
+alias ta='tmux a -t'
+alias tl='tmux list-sessions'
+
+alias ls='ls -lh'
+alias vi='vim'
+
+alias pbcopy='xclip -i -sel clip > /dev/null'
+alias pbpaste='xclip -o -sel clip'
+alias open='xdg-open'
+
+# URL-encode strings
+alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+
+# Intuitive map function
+# For example, to list all directories that contain a certain file:
+# find . -name .gitattributes | map dirname
+alias map="xargs -n1"
+
+# Lock the screen (when going AFK)
+alias afk="i3lock -c 000000"

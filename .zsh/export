@@ -1,0 +1,39 @@
+# Make vim the default editor
+export EDITOR=/usr/bin/nvim
+export TERMINAL="xfce4-terminal"
+
+export CLICOLOR=1
+export GOPATH=$HOME
+export PATH=$HOME/bin:$HOME/.bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
+export RUST_SRC_PATH=/usr/local/rust/src
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+# Larger bash history (allow 32³ entries; default is 500)
+export HISTSIZE=50000000;
+export HISTFILESIZE=$HISTSIZE;
+export HISTCONTROL=ignoredups;
+
+# Prefer US English and use UTF-8
+export LANG="en_US.UTF-8";
+export LC_ALL="en_US.UTF-8";
+
+# Don’t clear the screen after quitting a manual page
+export MANPAGER="less -X";
+
+# hidpi for gtk apps
+export GDK_SCALE=2
+export GDK_DPI_SCALE=0.5
+export QT_DEVICE_PIXEL_RATIO=2
+
+# kubernetes
+export KUBECONFIG=/var/run/kubernetes/admin.kubeconfig
+export PATH=$HOME/src/k8s.io/kubernetes/_output/local/bin/linux/amd64:$PATH
+# Load the kubectl completion code for zsh[1] into the current shell
+source <(kubectl completion zsh)
+
+# golang
+if [[ "$(pwd)" == "$HOME/go" || "$(pwd)" == "$HOME/go/*" ]]; then
+  export GOPATH=$HOME/go
+else
+  export GOPATH=$HOME
+fi

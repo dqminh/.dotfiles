@@ -21,6 +21,7 @@ srun() { run sudo "$@" ; }
 
 link() { run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
+system_link() { [[ ! -r $2 ]] && srun ln -sf $CUR/$1 $2 ; }
 
 # sets up apt sources
 # assumes you are going to use debian stretch
@@ -234,16 +235,38 @@ config_install() {
 	for name in "${!configs[@]}"; do
 		link $name ${configs[$name]}
 	done
+}
 
-	if [[ ! -r /usr/share/xfce4/terminal/colorschemes/hybrid.theme ]]; then
-		srun ln -sf $CUR/themes/hybrid.theme /usr/share/xfce4/terminal/colorschemes/hybrid.theme
-	fi
+system_config_install() {
+	declare -A configs=(
+	["themes/hybrid.theme"]="/usr/share/xfce4/terminal/colorschemes/hybrid.theme"
+	["etc/systemd/logind.conf"]="/etc/systemd/logind.conf"
+	["etc/systemd/system/notify_osd.service"]="/etc/systemd/system/notify_osd.service"
+	["etc/systemd/system/i3lock@.service"]="/etc/systemd/system/i3lock@.service"
+	["etc/systemd/system/firewall.service"]="/etc/systemd/system/firewall.service"
+	["etc/udev/rules.d/70-rename-net-devices.rules"]="/etc/udev/rules.d/70-rename-net-devices.rules"
+	["etc/X11/xorg.conf.d/50-synaptics-clickpad.conf"]="/etc/X11/xorg.conf.d/50-synaptics-clickpad.conf"
+	)
+
+	srun mkdir -p /etc/systemd/system
+	srun mkdir -p /usr/share/xfce4/terminal/colorschemes
+	srun mkdir -p /etc/udev/rules.d
+	srun mkdir -p /etc/X11/xorg.conf.d
+
+	for name in "${!configs[@]}"; do
+		system_link $name ${configs[$name]}
+	done
+
+	srun systemctl enable firewall
+	srun systemctl enable notify_osd
+	srun systemctl enable i3lock@dqminh
 }
 
 usage() {
 	echo "Usage:"
 	echo "  apt     - setup packages"
 	echo "  config  - setup config files"
+	echo "  sconfig - setup system config files"
 	echo "  golang  - setup go and packages"
 	echo "  polybar - install polybar"
 	echo "  rust    - setup rust and packages"
@@ -259,6 +282,9 @@ main() {
 			;;
 		config)
 			( config_install )
+			;;
+		sconfig)
+			( system_config_install )
 			;;
 		go)
 			( go_install )

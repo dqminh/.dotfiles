@@ -93,41 +93,41 @@ bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
-    # These bindings trigger as soon as you enter the resize mode
+  # These bindings trigger as soon as you enter the resize mode
 
-    # Pressing left will shrink the window’s width.
-    # Pressing right will grow the window’s width.
-    # Pressing up will shrink the window’s height.
-    # Pressing down will grow the window’s height.
-    bindsym h resize shrink width  10 px or 10 ppt
-    bindsym j resize grow   height 10 px or 10 ppt
-    bindsym k resize shrink height 10 px or 10 ppt
-    bindsym l resize grow   width  10 px or 10 ppt
+  # Pressing left will shrink the window’s width.
+  # Pressing right will grow the window’s width.
+  # Pressing up will shrink the window’s height.
+  # Pressing down will grow the window’s height.
+  bindsym h resize shrink width  10 px or 10 ppt
+  bindsym j resize grow   height 10 px or 10 ppt
+  bindsym k resize shrink height 10 px or 10 ppt
+  bindsym l resize grow   width  10 px or 10 ppt
 
-    # same bindings, but for the arrow keys
-    bindsym Left  resize shrink width  10 px or 10 ppt
-    bindsym Down  resize grow   height 10 px or 10 ppt
-    bindsym Up    resize shrink height 10 px or 10 ppt
-    bindsym Right resize grow   width  10 px or 10 ppt
+  # same bindings, but for the arrow keys
+  bindsym Left  resize shrink width  10 px or 10 ppt
+  bindsym Down  resize grow   height 10 px or 10 ppt
+  bindsym Up    resize shrink height 10 px or 10 ppt
+  bindsym Right resize grow   width  10 px or 10 ppt
 
-    # back to normal: Enter or Escape
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
+  # back to normal: Enter or Escape
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
 }
 bindsym $mod+r mode "resize"
 
 # Power control mode
 set $power_control "[l]ock log[o]ut [s]uspend [h]ibernate [r]eboot [p]oweroff"
 mode $power_control {
-    bindsym l exec ~/.i3/lock.sh; mode "default"
-    bindsym o exec i3-msg exit; mode "default"
-    bindsym s exec systemctl suspend; mode "default"
-    bindsym h exec systemctl hibernate; mode "default"
-    bindsym r exec systemctl reboot; mode "default"
-    bindsym p exec systemctl poweroff; mode "default"
+  bindsym l exec ~/.i3/lock.sh; mode "default"
+  bindsym o exec i3-msg exit; mode "default"
+  bindsym s exec systemctl suspend; mode "default"
+  bindsym h exec systemctl hibernate; mode "default"
+  bindsym r exec systemctl reboot; mode "default"
+  bindsym p exec systemctl poweroff; mode "default"
 
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
 }
 bindsym $mod+n mode $power_control
 
@@ -151,18 +151,11 @@ bindsym XF86MonBrightnessDown exec xbacklight -dec 5 && pkill -SIGRTMIN+2 i3bloc
 bindsym --release Print       exec --no-startup-id scrot
 bindsym --release Shift+Print exec --no-startup-id scrot -u
 
-
-
 # Borders
 for_window [class="^.*"] border pixel 2
 
 # Gaps
 gaps inner 6
-
-bindsym $mod+y       gaps inner current minus 6
-bindsym $mod+u       gaps inner current plus 6
-bindsym $mod+Shift+y gaps outer current minus 6
-bindsym $mod+Shift+u gaps outer current plus 6
 
 # class                 border  backgr. text    indicator
 client.focused          #676d3d #676d3d #ebdbb2 #676d3d
@@ -177,8 +170,9 @@ bar {
 
 
 # auto run commands
-exec --no-startup-id feh --bg-fill ${HOME}/Pictures/central-park2.jpg
+exec --no-startup-id feh --bg-fill ${HOME}/Pictures/wallpaper.jpg
 exec --no-startup-id blueman-applet
-
-exec xrdb -merge $HOME/.Xresources
-exec setxkbmap -layout 'us' && setxkbmap -option 'ctrl:nocaps'
+exec --no-startup-id nm-applet
+exec --no-startup-id xrdb -merge $HOME/.Xresources
+exec --no-startup-id setxkbmap -layout 'us'
+exec --no-startup-id setxkbmap -option 'ctrl:nocaps'
