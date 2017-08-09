@@ -20,9 +20,11 @@ Plug 'vim-scripts/YankRing.vim'
 
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
+Plug 'google/vim-glaive'
 
 Plug 'majutsushi/tagbar'
 Plug 'airblade/vim-gitgutter'
+Plug 'mhinz/vim-sayonara'
 
 Plug 'lepture/vim-jinja'
 Plug 'crosbymichael/vim-cfmt'
@@ -47,8 +49,14 @@ Plug 'junegunn/fzf.vim'
 Plug 'nanotech/jellybeans.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'morhetz/gruvbox'
+Plug 'ryanoasis/vim-devicons'
 Plug 'w0ng/vim-hybrid'
 call plug#end()
+
+call glaive#Install()
+" Optional: Enable codefmt's default mappings on the <Leader>= prefix.
+Glaive codefmt plugin[mappings]
+
 
 filetype plugin indent on
 syntax on
@@ -86,9 +94,9 @@ set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 let g:jellybeans_use_gui_italics = 0
-" colorscheme jellybeans
+colorscheme jellybeans
 " colorscheme gruvbox
-colorscheme hybrid
+" colorscheme hybrid
 " with material-theme display the split bar
 " hi VertSplit guibg=bg guifg=fg
 
@@ -155,7 +163,7 @@ set completeopt=menu,menuone,longest,noselect " no scratch
 set iskeyword+=- " do not use - as a word separator
 
 " Remove whitespace on save
-autocmd BufWritePre <buffer> :%s/\s\+$//e
+autocmd BufEnter * EnableStripWhitespaceOnSave
 
 "------------------------------------------------------------------------------
 " KEYMAPS
@@ -195,14 +203,17 @@ inoremap <right> <nop>
 
 " Quickfix
 nmap <leader>c :copen<cr>
-nmap <leader>e :Errors<cr>
 nmap <leader>C :cclose<cr>
+nmap <leader>e :Errors<cr>
 nmap <leader>cn :cnext<CR>
 nmap <leader>cp :cprevious<CR>
 
-" Navigate
-nmap <leader>av :AV<CR>
-nmap <leader>aa :A<CR>
+" delete the buffer
+nnoremap <silent> <leader>q :Sayonara<CR>
+
+" Buffer
+nnoremap <C-x> :bnext<CR>
+nnoremap <C-z> :bprev<CR>
 
 " Nerdtree
 let NERDTreeShowHidden=1
@@ -230,14 +241,16 @@ map <leader>/ <plug>NERDCommenterToggle<CR>
 nmap <leader><leader> :Files<CR>
 
 " vim-grepper
-" bind K to grep word under cursor
-nnoremap K :GrepperRg "\b<C-R><C-W>\b"<CR>:cw<CR>
-" bind \ (backward slash) to grep shortcut
-nmap <leader>f :GrepperRg --smart-case<SPACE>
-
-" quickfix
-nmap <leader>q :copen<CR>
-nmap <leader>qc :cclose<CR>
+" initialize g:grepper with empty dictionary
+let g:grepper = {}
+runtime autoload/grepper.vim
+let g:grepper.rg = {
+      \ 'escape': '\^$.*+?()[]{}|',
+      \ 'grepformat': '%f:%l:%c:%m',
+      \ 'grepprg': 'rg -H --no-heading --vimgrep --smart-case --hidden'}
+" bind leader-k to grep word under cursor
+nnoremap <leader>k :Grepper -tool rg -open -switch -cword -noprompt<cr>
+nmap <leader>f :Grepper -tool rg<cr>
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>
@@ -245,16 +258,6 @@ nnoremap <CR> :noh<CR><CR>
 " +/-: Increment number
 nnoremap + <c-a>
 nnoremap - <c-x>
-
-" Goimport
-let g:go_fmt_command = "goimports"
-
-" deoplete.vim
-let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
-let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
-let g:python_host_prog = '/usr/bin/python'
-let g:python3_host_prog = '/usr/bin/python3'
-inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " Python
 let g:pymode_rope_completion = 0
@@ -276,15 +279,20 @@ let g:cfmt_style = '-linux'
 let g:vim_markdown_conceal = 0
 let g:vim_markdown_new_list_item_indent = 2
 
-if filereadable(expand("~/.vimrc.local"))
-  source ~/.vimrc.local
-endif
-
 " tagbar
 nmap <leader>tt :TagbarToggle<CR>
 
 " lightline
-let g:lightline = { 'colorscheme': 'jellybeans' }
+let g:lightline = {
+      \ 'colorscheme': 'jellybeans',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ], [ 'readonly', 'relativepath', 'modified' ] ]
+      \ }
+      \ }
+
+" yankring
+" fix for neovim
+let g:yankring_clipboard_monitor=0
 
 "------------------------------------------------------------------------------
 " FILETYPES
@@ -331,3 +339,58 @@ augroup line_return
         \     execute 'normal! g`"zvzz' |
         \ endif
 augroup END
+
+" deoplete
+if has('nvim')
+  let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
+  let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
+  let g:python_host_prog = '/usr/bin/python'
+  let g:python3_host_prog = '/usr/bin/python3'
+  inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+
+  let g:deoplete#ignore_sources = {}
+  let g:deoplete#ignore_sources._ = ['buffer', 'member', 'tag', 'file', 'neosnippet']
+  let g:deoplete#sources#go#sort_class = ['func', 'type', 'var', 'const']
+  let g:deoplete#sources#go#align_class = 1
+
+  " Use partial fuzzy matches like YouCompleteMe
+  call deoplete#custom#set('_', 'matchers', ['matcher_fuzzy'])
+  call deoplete#custom#set('_', 'converters', ['converter_remove_paren'])
+  call deoplete#custom#set('_', 'disabled_syntaxes', ['Comment', 'String'])
+endif
+
+" vim-go
+let g:go_fmt_command = "goimports"
+let g:go_autodetect_gopath = 1
+let g:go_term_enabled = 1
+
+au BufNewFile,BufRead *.go set nolist
+au FileType go nmap <Leader>s  <Plug>(go-def-split)
+au FileType go nmap <Leader>v  <Plug>(go-def-vertical)
+au FileType go nmap <Leader>i  <Plug>(go-info)
+au FileType go nmap <leader>r  <Plug>(go-run)
+au FileType go nmap <leader>b  <Plug>(go-build)
+au FileType go nmap <leader>t  <Plug>(go-test)
+au FileType go nmap <leader>dt <Plug>(go-test-compile)
+au FileType go nmap <Leader>d  <Plug>(go-doc)
+au FileType go nmap <Leader>e  <Plug>(go-rename)
+
+if has('nvim')
+  au FileType go nmap <leader>rt <Plug>(go-run-tab)
+  au FileType go nmap <Leader>rs <Plug>(go-run-split)
+  au FileType go nmap <Leader>rv <Plug>(go-run-vertical)
+endif
+
+augroup go
+  autocmd!
+  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+augroup END
+
+" buf-explorer
+let g:bufExplorerShowRelativePath=1
+
+if filereadable(expand("~/.vimrc.local"))
+  source ~/.vimrc.local
+endif

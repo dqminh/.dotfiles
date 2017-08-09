@@ -1,4 +1,6 @@
 bindkey -e # use emacs mode explicitly
+# do not print out garbage in gnome-terminal when copy-paste
+set -g set-clipboard off
 
 # User configuration
 export EDITOR='nvim'
@@ -7,6 +9,19 @@ export GOPATH=$HOME
 export PATH=$HOME/bin:$HOME/.bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
 export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+# kubernetes
+export KUBECONFIG=/var/run/kubernetes/admin.kubeconfig
+export PATH=$HOME/src/k8s.io/kubernetes/_output/local/bin/linux/amd64:$PATH
+# Load the kubectl completion code for zsh[1] into the current shell
+source <(kubectl completion zsh)
+
+# golang
+if [[ "$(pwd)" == "$HOME/go" || "$(pwd)" == "$HOME/go/*" ]]; then
+  export GOPATH=$HOME/go
+else
+  export GOPATH=$HOME
+fi
 
 alias tree='tree -F'
 alias gl="git log --pretty=format:'%h - %an, %ar : %s'"

@@ -5,6 +5,7 @@ CUR=$(pwd)
 NOOP=${NOOP:-false}
 GO_VERSION=1.8.3
 RUST_VERSION=1.19.0
+POLYBAR_VERSION=3.0.5
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -184,7 +185,6 @@ go_install() {
 }
 
 go_pkg() {
-	(
 	export GOPATH=/home/dqminh
 	run go get github.com/golang/lint/golint
 	run go get golang.org/x/tools/cmd/cover
@@ -195,7 +195,6 @@ go_pkg() {
 	run go get github.com/nsf/gocode
 	run go get github.com/rogpeppe/godef
 	run go get github.com/shurcooL/markdownfmt
-	)
 }
 
 fonts_install() {
@@ -213,24 +212,32 @@ config_install() {
 	[".tmux.conf"]=".tmux.conf"
 	[".zshrc"]=".zshrc"
 	[".zsh"]=".zsh"
+	[".Xresources"]=".Xresources"
+	[".Xresources"]=".Xdefaults"
+	[".Xmodmap"]=".Xmodmap"
 	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
 	["nvim/init.vim"]=".config/nvim/init.vim"
 	["i3/config"]=".config/i3/config"
+	["i3status/config"]=".config/i3status/config"
 	["compton/compton.conf"]=".config/compton.conf"
 	["user/systemd"]=".config/systemd/user"
+	["themes/gtk-3.0/gtk.css"]=".config/gtk-3.0/gtk.css"
 	)
 
 	run mkdir -p $HOME/.config/nvim
 	run mkdir -p $HOME/.config/nvim/autoload
 	run mkdir -p $HOME/.config/i3
-	run mkdir -p $HOME/.config/i3blocks
+	run mkdir -p $HOME/.config/i3status
 	run mkdir -p $HOME/.config/systemd
+	run mkdir -p $HOME/.config/gtk-3.0
 
 	for name in "${!configs[@]}"; do
 		link $name ${configs[$name]}
 	done
 
-	srun ln -sf $CUR/themes/hybrid.theme /usr/share/xfce4/terminal/colorschemes/hybrid.theme
+	if [[ ! -r /usr/share/xfce4/terminal/colorschemes/hybrid.theme ]]; then
+		srun ln -sf $CUR/themes/hybrid.theme /usr/share/xfce4/terminal/colorschemes/hybrid.theme
+	fi
 }
 
 usage() {
@@ -238,6 +245,7 @@ usage() {
 	echo "  apt     - setup packages"
 	echo "  config  - setup config files"
 	echo "  golang  - setup go and packages"
+	echo "  polybar - install polybar"
 	echo "  rust    - setup rust and packages"
 	echo "  fonts   - setup fonts"
 }
@@ -259,6 +267,9 @@ main() {
 		rust)
 			( rust_install )
 			( rust_pkg )
+			;;
+		polybar)
+			( polybar_install )
 			;;
 		fonts)
 			( fonts_install )
