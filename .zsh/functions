@@ -86,3 +86,8 @@ cilium-up() {
   fi
   sudo -E cilium-agent "${args[@]}" >> /tmp/cilium-agent.log
 }
+
+minikube-up() {
+  sudo chown -R dqminh /var/run/kubernetes
+  minikube start --vm-driver kvm
+}

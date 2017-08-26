@@ -34,7 +34,6 @@ Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
 Plug 'racer-rust/vim-racer', {'for': 'rust'}
 Plug 'rust-lang/rust.vim', {'for': 'rust'}
 Plug 'fatih/vim-go'
-Plug 'python-mode/python-mode', {'for': 'python'}
 Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
 
@@ -51,6 +50,7 @@ Plug 'itchyny/lightline.vim'
 Plug 'morhetz/gruvbox'
 Plug 'ryanoasis/vim-devicons'
 Plug 'w0ng/vim-hybrid'
+Plug 'lifepillar/vim-solarized8'
 call plug#end()
 
 call glaive#Install()
@@ -63,6 +63,7 @@ syntax on
 
 let mapleader = ","
 set backspace=indent,eol,start " allow backspacing over everything in insert mode
+set mouse=a
 
 " Use system clipboard
 " Writes to the unnamed register also writes to the * and + registers. This
@@ -90,13 +91,11 @@ set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
-set background=dark
 set synmaxcol=500      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-let g:jellybeans_use_gui_italics = 0
-colorscheme jellybeans
-" colorscheme gruvbox
-" colorscheme hybrid
+set background=dark
+colorscheme gruvbox
+" let g:jellybeans_use_gui_italics = 0
 " with material-theme display the split bar
 " hi VertSplit guibg=bg guifg=fg
 
@@ -209,11 +208,7 @@ nmap <leader>cn :cnext<CR>
 nmap <leader>cp :cprevious<CR>
 
 " delete the buffer
-nnoremap <silent> <leader>q :Sayonara<CR>
-
-" Buffer
-nnoremap <C-x> :bnext<CR>
-nnoremap <C-z> :bprev<CR>
+nnoremap <silent> <leader>q :Sayonara!<CR>
 
 " Nerdtree
 let NERDTreeShowHidden=1
@@ -222,6 +217,7 @@ let NERDTREEWinSize=30
 nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
 let NERDTreeIgnore = ['\.pyc$', '^__pycache__$']
+let NERDTreeHighlightCursorline=0
 
 " Fugitive
 nnoremap <leader>gb :Gblame<CR>
@@ -302,7 +298,6 @@ augroup autoformat_settings
   autocmd FileType bzl AutoFormatBuffer buildifier
   autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
   autocmd FileType dart AutoFormatBuffer dartfmt
-  autocmd FileType html,css,json AutoFormatBuffer js-beautify
   autocmd FileType java AutoFormatBuffer google-java-format
   autocmd FileType python AutoFormatBuffer yapf
 augroup END

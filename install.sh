@@ -21,7 +21,7 @@ srun() { run sudo "$@" ; }
 
 link() { run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
-system_link() { [[ ! -r $2 ]] && srun ln -sf $CUR/$1 $2 ; }
+scopy() { srun rm -f $2 && srun cp $CUR/$1 $2 ; }
 
 # sets up apt sources
 # assumes you are going to use debian stretch
@@ -58,7 +58,7 @@ EOF
 	# add docker gpg key
 	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 	# add the git-core ppa gpg key
-	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
+	srun apt-key adv --keyserver hkp://p81.pool.sks-keyservers.net:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
 
 	# add the neovim ppa gpg key
 	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DBB0BE9366964F134855E2255F96FCF8231B6DD
@@ -135,6 +135,7 @@ apt_pkg() {
         cmake \
         mercurial \
         pkg-config \
+		ufw \
 		--no-install-recommends
 
 	srun apt-get install -y \
@@ -162,6 +163,8 @@ apt_pkg() {
 
 	# setup persistent journal
 	srun mkdir -p /var/log/journal
+
+	srun ufw enable
 
 	pip install neovim
 	pip3 install neovim
@@ -240,12 +243,14 @@ config_install() {
 system_config_install() {
 	declare -A configs=(
 	["themes/hybrid.theme"]="/usr/share/xfce4/terminal/colorschemes/hybrid.theme"
+	["themes/gruvbox.theme"]="/usr/share/xfce4/terminal/colorschemes/gruvbox.theme"
 	["etc/systemd/logind.conf"]="/etc/systemd/logind.conf"
 	["etc/systemd/system/notify_osd.service"]="/etc/systemd/system/notify_osd.service"
 	["etc/systemd/system/i3lock@.service"]="/etc/systemd/system/i3lock@.service"
-	["etc/systemd/system/firewall.service"]="/etc/systemd/system/firewall.service"
+	["etc/systemd/system/dropbox@.service"]="/etc/systemd/system/dropbox@.service"
 	["etc/udev/rules.d/70-rename-net-devices.rules"]="/etc/udev/rules.d/70-rename-net-devices.rules"
-	["etc/X11/xorg.conf.d/50-synaptics-clickpad.conf"]="/etc/X11/xorg.conf.d/50-synaptics-clickpad.conf"
+	["etc/X11/xorg.conf.d/50-touchpad.conf"]="/etc/X11/xorg.conf.d/50-touchpad.conf"
+	["etc/X11/xorg.conf.d/50-backlight.conf"]="/etc/X11/xorg.conf.d/50-backlight.conf"
 	)
 
 	srun mkdir -p /etc/systemd/system
@@ -254,10 +259,10 @@ system_config_install() {
 	srun mkdir -p /etc/X11/xorg.conf.d
 
 	for name in "${!configs[@]}"; do
-		system_link $name ${configs[$name]}
+		scopy $name ${configs[$name]}
 	done
 
-	srun systemctl enable firewall
+	srun systemctl daemon-reload
 	srun systemctl enable notify_osd
 	srun systemctl enable i3lock@dqminh
 }

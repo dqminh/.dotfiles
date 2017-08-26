@@ -14,6 +14,7 @@ load=(
   ~/.fzf.zsh
   ~/.zsh/prompt_dqminh_setup
   ~/.local/bin/virtualenvwrapper.sh
+  # ~/.config/nvim/plugged/gruvbox/gruvbox_256palette.sh
 )
 for file in $load; do
   [[ -r "$file" ]] && [[ -f "$file" ]] && source "$file"

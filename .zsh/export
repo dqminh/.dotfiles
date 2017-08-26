@@ -4,7 +4,7 @@ export TERMINAL="xfce4-terminal"
 
 export CLICOLOR=1
 export GOPATH=$HOME
-export PATH=$HOME/bin:$HOME/.bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
+export PATH=$HOME/bin:$HOME/.bin:$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
 export RUST_SRC_PATH=/usr/local/rust/src
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 

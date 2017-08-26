@@ -1,26 +1,22 @@
 general {
-	colors = true
-	interval = 2
+  colors = true
+  color_good = "#98971a"
+  color_bad = "#cc241d"
+  color_degraded = "#fabd2f"
+  interval = 2
 }
 
 order += "path_exists VPN"
-order += "wireless wlp58s0"
 order += "volume master"
 order += "battery 0"
-order += "cpu_temperature 0"
 order += "tztime local"
-
-wireless wlp58s0 {
-	format_up = "W: (%quality at %essid) %ip"
-	format_down = "W: down"
-}
 
 battery 0 {
 	format = "%status %percentage %remaining"
 	format_down = "No battery"
-	status_chr = " CHR"
+	status_chr = "CHR"
 	status_bat = "BAT"
-	status_full = " FULL"
+	status_full = "FULL"
 	path = "/sys/class/power_supply/BAT%d/uevent"
 	low_threshold = 10
 }
@@ -30,16 +26,7 @@ path_exists VPN {
 }
 
 tztime local {
-	format = "%Y-%m-%d %H:%M:%S"
-}
-
-load {
-	format = "%1min"
-}
-
-cpu_temperature 0 {
-	format = "T: %degrees °C"
-	path = "/sys/class/hwmon/hwmon1/temp1_input"
+	format = "%m-%d %H:%M "
 }
 
 volume master {
