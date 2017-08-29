@@ -48,9 +48,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'nanotech/jellybeans.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'morhetz/gruvbox'
-Plug 'ryanoasis/vim-devicons'
 Plug 'w0ng/vim-hybrid'
-Plug 'lifepillar/vim-solarized8'
 call plug#end()
 
 call glaive#Install()
@@ -91,13 +89,13 @@ set so=7               " Set 7 lines to the cursor when moving vertical
 set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
-set synmaxcol=500      " not slow when highlight long line
+set synmaxcol=300      " not slow when highlight long line
 set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 set background=dark
-colorscheme gruvbox
-" let g:jellybeans_use_gui_italics = 0
-" with material-theme display the split bar
-" hi VertSplit guibg=bg guifg=fg
+
+let g:jellybeans_use_gui_italics=0
+let g:jellybeans_use_term_italics=0
+colorscheme jellybeans
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving

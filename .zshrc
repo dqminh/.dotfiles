@@ -24,3 +24,7 @@ fpath=("$HOME/.zsh" $fpath)
 autoload -U colors && colors
 autoload -Uz promptinit && promptinit
 prompt "dqminh"
+
+if [[ $TILIX_ID ]]; then
+	source /etc/profile.d/vte.sh
+fi

@@ -3,9 +3,8 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.8.3
+GO_VERSION=1.9
 RUST_VERSION=1.19.0
-POLYBAR_VERSION=3.0.5
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -22,6 +21,24 @@ srun() { run sudo "$@" ; }
 link() { run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
 scopy() { srun rm -f $2 && srun cp $CUR/$1 $2 ; }
+
+arch_pkg() {
+	yaourt -Syu
+	yaourt -S \
+		tmux \
+		zsh \
+		neovim \
+		python \
+		python2 \
+		python-neovim \
+		python2-neovim \
+		docker \
+		tlp \
+		google-chrome \
+		htop \
+		gconf \
+		--noconfirm
+}
 
 # sets up apt sources
 # assumes you are going to use debian stretch
@@ -209,30 +226,20 @@ fonts_install() {
 
 config_install() {
 	declare -A configs=(
-	["gnupg/gpg.conf"]=".gnupg/gpg.conf"
-	["gnupg/gpg-agent.conf"]=".gnupg/gpg-agent.conf"
+	# ["gnupg/gpg.conf"]=".gnupg/gpg.conf"
+	# ["gnupg/gpg-agent.conf"]=".gnupg/gpg-agent.conf"
 	[".gitconfig"]=".gitconfig"
 	[".gitignore"]=".gitignore"
 	[".tmux.conf"]=".tmux.conf"
 	[".zshrc"]=".zshrc"
 	[".zsh"]=".zsh"
-	[".Xresources"]=".Xresources"
-	[".Xresources"]=".Xdefaults"
-	[".Xmodmap"]=".Xmodmap"
 	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
 	["nvim/init.vim"]=".config/nvim/init.vim"
-	["i3/config"]=".config/i3/config"
-	["i3status/config"]=".config/i3status/config"
-	["compton/compton.conf"]=".config/compton.conf"
-	["user/systemd"]=".config/systemd/user"
 	["themes/gtk-3.0/gtk.css"]=".config/gtk-3.0/gtk.css"
 	)
 
 	run mkdir -p $HOME/.config/nvim
 	run mkdir -p $HOME/.config/nvim/autoload
-	run mkdir -p $HOME/.config/i3
-	run mkdir -p $HOME/.config/i3status
-	run mkdir -p $HOME/.config/systemd
 	run mkdir -p $HOME/.config/gtk-3.0
 
 	for name in "${!configs[@]}"; do
@@ -281,6 +288,9 @@ usage() {
 main() {
 	local target=$1
 	case $target in
+		arch)
+			( arch_pkg )
+			;;
 		apt)
 			( apt_sources )
 			( apt_pkg )
