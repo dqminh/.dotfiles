@@ -18,9 +18,13 @@ Plug 'tpope/vim-unimpaired'
 Plug 'mhinz/vim-grepper'
 Plug 'vim-scripts/YankRing.vim'
 
+Plug 'justinmk/vim-sneak'
+Plug 'tpope/vim-eunuch'
+
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
 Plug 'google/vim-glaive'
+Plug 'vim-utils/vim-cscope'
 
 Plug 'majutsushi/tagbar'
 Plug 'airblade/vim-gitgutter'
@@ -36,6 +40,7 @@ Plug 'rust-lang/rust.vim', {'for': 'rust'}
 Plug 'fatih/vim-go'
 Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
+Plug 'Rip-Rip/clang_complete'
 
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
@@ -45,10 +50,15 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 " themes
-Plug 'nanotech/jellybeans.vim'
 Plug 'itchyny/lightline.vim'
+Plug 'nanotech/jellybeans.vim'
 Plug 'morhetz/gruvbox'
-Plug 'w0ng/vim-hybrid'
+Plug 'NLKNguyen/papercolor-theme'
+Plug 'rakr/vim-one'
+Plug 'rakr/vim-two-firewatch'
+Plug 'sonph/onehalf', { 'rtp': 'vim' }
+Plug 'noahfrederick/vim-noctu'
+Plug 'noahfrederick/vim-hemisu'
 call plug#end()
 
 call glaive#Install()
@@ -90,12 +100,14 @@ set textwidth=79       " Default maximum textwidth is 79
 
 " Theme
 set synmaxcol=300      " not slow when highlight long line
-set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
+" set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 set background=dark
 
-let g:jellybeans_use_gui_italics=0
-let g:jellybeans_use_term_italics=0
-colorscheme jellybeans
+" let g:jellybeans_use_gui_italics=0
+" let g:jellybeans_use_term_italics=0
+" colorscheme jellybeans
+colorscheme onehalfdark
+hi EndOfBuffer guifg=bg ctermfg=bg
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -144,7 +156,7 @@ set fo=tcrqo " t autowraps text using textwidth
              " o auto insert comment leader when press o or O
 
 " Display extra whitespace
-set list listchars=tab:»·,trail:·
+set list listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
 
 " Turn on wildmenu
 set wildmenu
@@ -216,6 +228,8 @@ nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
 let NERDTreeIgnore = ['\.pyc$', '^__pycache__$']
 let NERDTreeHighlightCursorline=0
+let NERDTreeDirArrowExpandable = ""
+let NERDTreeDirArrowCollapsible = ""
 
 " Fugitive
 nnoremap <leader>gb :Gblame<CR>
@@ -278,7 +292,7 @@ nmap <leader>tt :TagbarToggle<CR>
 
 " lightline
 let g:lightline = {
-      \ 'colorscheme': 'jellybeans',
+      \ 'colorscheme': 'onehalfdark',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ], [ 'readonly', 'relativepath', 'modified' ] ]
       \ }
@@ -294,7 +308,7 @@ let g:yankring_clipboard_monitor=0
 
 augroup autoformat_settings
   autocmd FileType bzl AutoFormatBuffer buildifier
-  autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
+  " autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
   autocmd FileType dart AutoFormatBuffer dartfmt
   autocmd FileType java AutoFormatBuffer google-java-format
   autocmd FileType python AutoFormatBuffer yapf
@@ -302,6 +316,7 @@ augroup END
 
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
+au BufNewFile,BufRead *.xml setlocal noexpandtab
 au BufNewFile,BufRead *.go set nolist
 au BufNewFile,BufRead *.txt setfiletype text
 au BufNewFile,BufRead *.hbs set syntax=mustache
@@ -311,7 +326,7 @@ au BufNewFile,BufRead *.proto setlocal nolist tabstop=4 softtabstop=4 shiftwidth
 au BufNewFile,BufRead *.html set textwidth=999
 au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=120 syntax=off
 au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru} set ft=ruby
-autocmd BufWritePre *.c,*.h Cfmt
+"autocmd BufWritePre *.c,*.h Cfmt
 au FileType text setlocal textwidth=78
 
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
@@ -337,19 +352,27 @@ augroup END
 if has('nvim')
   let g:deoplete#enable_at_startup = 1 " Run deoplete.nvim automatically
   let g:deoplete#sources#go#sort_class = ['package', 'func', 'type', 'var', 'const']
+  let g:deoplete#sources#go#align_class = 1
   let g:python_host_prog = '/usr/bin/python'
   let g:python3_host_prog = '/usr/bin/python3'
-  inoremap <silent><expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+  inoremap <silent><expr> <TAB>
+		\ pumvisible() ? "\<C-n>" :
+		\ <SID>check_back_space() ? "\<TAB>" :
+		\ deoplete#mappings#manual_complete()
+  inoremap <silent><expr> <S-TAB>
+		\ pumvisible() ? "\<C-p>" :
+		\ <SID>check_back_space() ? "\<S-TAB>" :
+		\ deoplete#mappings#manual_complete()
+  function! s:check_back_space() abort "{{{
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~ '\s'
+  endfunction"}}}
 
-  let g:deoplete#ignore_sources = {}
-  let g:deoplete#ignore_sources._ = ['buffer', 'member', 'tag', 'file', 'neosnippet']
-  let g:deoplete#sources#go#sort_class = ['func', 'type', 'var', 'const']
-  let g:deoplete#sources#go#align_class = 1
-
-  " Use partial fuzzy matches like YouCompleteMe
-  call deoplete#custom#set('_', 'matchers', ['matcher_fuzzy'])
-  call deoplete#custom#set('_', 'converters', ['converter_remove_paren'])
-  call deoplete#custom#set('_', 'disabled_syntaxes', ['Comment', 'String'])
+  " clang_complete
+  let g:clang_complete_auto = 0
+  let g:clang_auto_select = 0
+  let g:clang_omnicppcomplete_compliance = 0
+  let g:clang_make_default_keymappings = 0
 endif
 
 " vim-go

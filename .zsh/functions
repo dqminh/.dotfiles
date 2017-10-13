@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # convert bytes to human readable text
 function byteme()
 {
@@ -40,6 +42,8 @@ function chrome-proxy { nohup google-chrome --proxy-server 127.0.0.1:6666 2>&1 >
 
 kube-up() {
   local net_plugin=$1
+  sudo mkdir /var/run/kubernetes
+  sudo chown -R dqminh /var/run/kubernetes
 
   if [[ "$net_plugin" == "kubenet" || -z $net_plugin ]]; then
     sudo rm /etc/cni/net.d/*
@@ -71,7 +75,7 @@ EOF
   export LOG_LEVEL=20
   kubernetes_dir=$HOME/src/k8s.io/kubernetes
   cd $kubernetes_dir
-  exec ./hack/local-up-cluster.sh
+  ./hack/local-up-cluster.sh
 }
 
 cilium-up() {
@@ -88,6 +92,16 @@ cilium-up() {
 }
 
 minikube-up() {
+  sudo mkdir /var/run/kubernetes
   sudo chown -R dqminh /var/run/kubernetes
-  minikube start --vm-driver kvm
+  minikube start --network-plugin=cni
+}
+
+dind-kube() {
+  export BUILD_KUBEADM=y
+  export BUILD_HYPERKUBE=y
+  sudo mkdir /var/run/kubernetes
+  sudo chown -R dqminh /var/run/kubernetes
+  local cmd="$HOME/src/github.com/Mirantis/kubeadm-dind-cluster/dind-cluster.sh"
+  $cmd "$@"
 }
