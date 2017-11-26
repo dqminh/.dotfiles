@@ -105,3 +105,5 @@ dind-kube() {
   local cmd="$HOME/src/github.com/Mirantis/kubeadm-dind-cluster/dind-cluster.sh"
   $cmd "$@"
 }
+
+datenow() { date -u +%Y-%m-%dT%H:%M:%SZ }

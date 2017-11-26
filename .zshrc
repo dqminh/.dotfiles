@@ -13,6 +13,7 @@ load=(
   ~/.zsh/z
   ~/.fzf.zsh
   ~/.zsh/prompt_dqminh_setup
+  /usr/bin/virtualenvwrapper.sh
   ~/.local/bin/virtualenvwrapper.sh
   ~/.bazel/bin/bazel-complete.bash
   # ~/.config/nvim/plugged/gruvbox/gruvbox_256palette.sh

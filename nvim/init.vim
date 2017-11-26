@@ -15,6 +15,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-grepper'
 Plug 'vim-scripts/YankRing.vim'
 
@@ -57,7 +58,6 @@ Plug 'NLKNguyen/papercolor-theme'
 Plug 'rakr/vim-one'
 Plug 'rakr/vim-two-firewatch'
 Plug 'sonph/onehalf', { 'rtp': 'vim' }
-Plug 'noahfrederick/vim-noctu'
 Plug 'noahfrederick/vim-hemisu'
 call plug#end()
 
@@ -103,11 +103,9 @@ set synmaxcol=300      " not slow when highlight long line
 " set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 set background=dark
 
-" let g:jellybeans_use_gui_italics=0
-" let g:jellybeans_use_term_italics=0
-" colorscheme jellybeans
-colorscheme onehalfdark
-hi EndOfBuffer guifg=bg ctermfg=bg
+let g:jellybeans_use_gui_italics=0
+let g:jellybeans_use_term_italics=0
+colorscheme jellybeans
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -314,6 +312,10 @@ augroup autoformat_settings
   autocmd FileType python AutoFormatBuffer yapf
 augroup END
 
+
+
+au BufRead,BufNewFile *.bzl,BUILD,sky setf python.skylark
+
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.xml setlocal noexpandtab
@@ -356,13 +358,13 @@ if has('nvim')
   let g:python_host_prog = '/usr/bin/python'
   let g:python3_host_prog = '/usr/bin/python3'
   inoremap <silent><expr> <TAB>
-		\ pumvisible() ? "\<C-n>" :
-		\ <SID>check_back_space() ? "\<TAB>" :
-		\ deoplete#mappings#manual_complete()
+        \ pumvisible() ? "\<C-n>" :
+        \ <SID>check_back_space() ? "\<TAB>" :
+        \ deoplete#mappings#manual_complete()
   inoremap <silent><expr> <S-TAB>
-		\ pumvisible() ? "\<C-p>" :
-		\ <SID>check_back_space() ? "\<S-TAB>" :
-		\ deoplete#mappings#manual_complete()
+        \ pumvisible() ? "\<C-p>" :
+        \ <SID>check_back_space() ? "\<S-TAB>" :
+        \ deoplete#mappings#manual_complete()
   function! s:check_back_space() abort "{{{
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~ '\s'
