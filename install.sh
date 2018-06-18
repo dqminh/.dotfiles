@@ -3,8 +3,10 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.9
-RUST_VERSION=1.19.0
+GO_VERSION=1.10.3
+RUST_VERSION=1.22.1
+NEOVIM_VERSION=0.3.0
+DOCKER_COMPOSE_VERSION=1.17.1
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -22,63 +24,29 @@ link() { run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
 scopy() { srun rm -f $2 && srun cp $CUR/$1 $2 ; }
 
-arch_pkg() {
-	yaourt -Syu
-	yaourt -S \
-		tmux \
-		zsh \
-		neovim \
-		python \
-		python2 \
-		python-neovim \
-		python2-neovim \
-		docker \
-		tlp \
-		google-chrome \
-		htop \
-		gconf \
-		--noconfirm
-}
-
 # sets up apt sources
 # assumes you are going to use debian stretch
 apt_sources() {
-	srun apt-get update
-	srun apt-get install -y \
-		apt-transport-https \
-		ca-certificates \
-		curl \
-		wget \
-		--no-install-recommends
+ 	srun apt-get update
+ 	srun apt-get install -y \
+ 		software-properties-common \
+ 		curl \
+ 		wget \
+ 		--no-install-recommends
 
+	srun add-apt-repository -y ppa:neovim-ppa/stable
 	cat <<-EOF | sudo tee /etc/apt/sources.list.d/laptop.list
-# git
-deb http://ppa.launchpad.net/git-core/ppa/ubuntu zesty main
-deb-src http://ppa.launchpad.net/git-core/ppa/ubuntu zesty main
-
-deb http://ppa.launchpad.net/neovim-ppa/stable/ubuntu xenial main
-deb-src http://ppa.launchpad.net/neovim-ppa/stable/ubuntu xenial main
-
 deb https://atlassian.artifactoryonline.com/atlassian/hipchat-apt-client zesty main
-
 deb https://dl.google.com/linux/chrome/deb/ stable main
-
 deb [arch=amd64] https://download.docker.com/linux/ubuntu zesty stable
-
-deb https://packages.cloud.google.com/apt cloud-sdk-sid main
 EOF
 
-	# Import the Google Cloud Platform public key
-	srun sh -c "curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -"
+	# install hipchat key
+	srun sh -c "wget -O - https://atlassian.artifactoryonline.com/atlassian/api/gpg/key/public | apt-key add -"
 	# Import the Google Chrome public key
 	srun sh -c "curl https://dl.google.com/linux/linux_signing_key.pub | apt-key add -"
 	# add docker gpg key
-	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-	# add the git-core ppa gpg key
-	srun apt-key adv --keyserver hkp://p81.pool.sks-keyservers.net:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
-
-	# add the neovim ppa gpg key
-	srun apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DBB0BE9366964F134855E2255F96FCF8231B6DD
+	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
 
 	# turn off translations, speed up apt-get update
 	srun mkdir -p /etc/apt/apt.conf.d
@@ -107,11 +75,7 @@ apt_pkg() {
 		findutils \
 		gcc \
 		git \
-		gnupg \
-		gnupg-agent \
-		gnupg2 \
 		google-chrome-stable \
-		google-cloud-sdk \
 		grep \
 		gzip \
 		hostname \
@@ -136,7 +100,6 @@ apt_pkg() {
 		python-pip \
 		python3 \
 		python3-pip \
-		ranger \
 		s3cmd \
 		scdaemon \
 		ssh \
@@ -145,26 +108,16 @@ apt_pkg() {
 		tar \
 		tree \
 		tzdata \
+		tmux \
 		unzip \
 		xclip \
 		xz-utils \
 		zip \
-        cmake \
-        mercurial \
-        pkg-config \
+		cmake \
+		mercurial \
+		pkg-config \
 		ufw \
 		--no-install-recommends
-
-	srun apt-get install -y \
-		feh \
-		i3blocks \
-		scrot \
-		compton \
-		suckless-tools \
-		--no-install-recommends
-
-	# install tlp with recommends
-	srun apt-get install -y tlp tlp-rdw
 
 	srun apt-get autoremove
 	srun apt-get autoclean
@@ -175,7 +128,7 @@ apt_pkg() {
 	srun adduser "$USER" docker
 	srun adduser "$USER" systemd-journal
 
-	srun wget https://github.com/docker/compose/releases/download/1.14.0/docker-compose-`uname -s`-`uname -m` -O /usr/local/bin/docker-compose
+	srun wget https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` -O /usr/local/bin/docker-compose
 	srun chmod +x /usr/local/bin/docker-compose
 
 	# setup persistent journal
@@ -205,6 +158,23 @@ go_install() {
 	srun chown -R dqminh /usr/local/go
 }
 
+neovim_install() {
+	srun rm -rf /usr/local/bin/nvim
+	srun wget https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim.appimage -O /usr/local/bin/nvim
+	srun chmod +x /usr/local/bin/nvim
+	srun update-alternatives --install /usr/bin/vi vi /usr/local/bin/nvim 60
+	srun update-alternatives --auto vi
+	srun update-alternatives --install /usr/bin/vim vim /usr/local/bin/nvim 60
+	srun update-alternatives --auto vim
+	srun update-alternatives --install /usr/bin/editor editor /usr/local/bin/nvim 60
+	srun update-alternatives --auto editor
+}
+
+neovim_pkg() {
+	srun apt update
+	srun apt install python-neovim python3-neovim
+}
+
 go_pkg() {
 	export GOPATH=/home/dqminh
 	run go get github.com/golang/lint/golint
@@ -219,15 +189,13 @@ go_pkg() {
 }
 
 fonts_install() {
-	mkdir -p $HOME/.local/share/fonts
+	mkdir -p $HOME/.local/share
 	link fonts .local/share/fonts
 	fc-cache -fv
 }
 
 config_install() {
 	declare -A configs=(
-	# ["gnupg/gpg.conf"]=".gnupg/gpg.conf"
-	# ["gnupg/gpg-agent.conf"]=".gnupg/gpg-agent.conf"
 	[".gitconfig"]=".gitconfig"
 	[".gitignore"]=".gitignore"
 	[".tmux.conf"]=".tmux.conf"
@@ -235,62 +203,38 @@ config_install() {
 	[".zsh"]=".zsh"
 	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
 	["nvim/init.vim"]=".config/nvim/init.vim"
-	["themes/gtk-3.0/gtk.css"]=".config/gtk-3.0/gtk.css"
 	)
 
 	run mkdir -p $HOME/.config/nvim
 	run mkdir -p $HOME/.config/nvim/autoload
-	run mkdir -p $HOME/.config/gtk-3.0
 
 	for name in "${!configs[@]}"; do
 		link $name ${configs[$name]}
 	done
 }
 
-system_config_install() {
-	declare -A configs=(
-	["themes/hybrid.theme"]="/usr/share/xfce4/terminal/colorschemes/hybrid.theme"
-	["themes/gruvbox.theme"]="/usr/share/xfce4/terminal/colorschemes/gruvbox.theme"
-	["etc/systemd/logind.conf"]="/etc/systemd/logind.conf"
-	["etc/systemd/system/notify_osd.service"]="/etc/systemd/system/notify_osd.service"
-	["etc/systemd/system/i3lock@.service"]="/etc/systemd/system/i3lock@.service"
-	["etc/systemd/system/dropbox@.service"]="/etc/systemd/system/dropbox@.service"
-	["etc/udev/rules.d/70-rename-net-devices.rules"]="/etc/udev/rules.d/70-rename-net-devices.rules"
-	["etc/X11/xorg.conf.d/50-touchpad.conf"]="/etc/X11/xorg.conf.d/50-touchpad.conf"
-	["etc/X11/xorg.conf.d/50-backlight.conf"]="/etc/X11/xorg.conf.d/50-backlight.conf"
-	)
+themes_install() {
+	mkdir -p ~/.themes
+	cd ~/.themes && curl -L \
+		https://github.com/godlyranchdressing/Minwaita/releases/download/V1.6/Minwaita-OSX.tar.gz | tar xvz
 
-	srun mkdir -p /etc/systemd/system
-	srun mkdir -p /usr/share/xfce4/terminal/colorschemes
-	srun mkdir -p /etc/udev/rules.d
-	srun mkdir -p /etc/X11/xorg.conf.d
-
-	for name in "${!configs[@]}"; do
-		scopy $name ${configs[$name]}
-	done
-
-	srun systemctl daemon-reload
-	srun systemctl enable notify_osd
-	srun systemctl enable i3lock@dqminh
+	mkdir -p ~/.config
+	git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
 }
 
 usage() {
 	echo "Usage:"
 	echo "  apt     - setup packages"
 	echo "  config  - setup config files"
-	echo "  sconfig - setup system config files"
 	echo "  golang  - setup go and packages"
-	echo "  polybar - install polybar"
 	echo "  rust    - setup rust and packages"
 	echo "  fonts   - setup fonts"
+	echo "  themes  - setup some themes"
 }
 
 main() {
 	local target=$1
 	case $target in
-		arch)
-			( arch_pkg )
-			;;
 		apt)
 			( apt_sources )
 			( apt_pkg )
@@ -298,22 +242,23 @@ main() {
 		config)
 			( config_install )
 			;;
-		sconfig)
-			( system_config_install )
-			;;
 		go)
 			( go_install )
 			( go_pkg )
+			;;
+		neovim)
+			( neovim_install )
+			( neovim_pkg )
 			;;
 		rust)
 			( rust_install )
 			( rust_pkg )
 			;;
-		polybar)
-			( polybar_install )
-			;;
 		fonts)
 			( fonts_install )
+			;;
+		themes)
+			( themes_install )
 			;;
 		*)
 			usage

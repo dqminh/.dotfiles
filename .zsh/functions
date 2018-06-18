@@ -94,7 +94,7 @@ cilium-up() {
 minikube-up() {
   sudo mkdir /var/run/kubernetes
   sudo chown -R dqminh /var/run/kubernetes
-  minikube start --network-plugin=cni
+  minikube start --network-plugin=cni --vm-driver=kvm2
 }
 
 dind-kube() {

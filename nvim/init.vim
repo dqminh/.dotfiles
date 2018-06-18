@@ -8,7 +8,7 @@ Plug 'Raimondi/delimitMate'
 Plug 'Yggdroot/indentLine'
 Plug 'jlanzarotta/bufexplorer'
 Plug 'ntpeters/vim-better-whitespace'
-Plug 'godlygeek/tabular'
+Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'
@@ -18,6 +18,8 @@ Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-grepper'
 Plug 'vim-scripts/YankRing.vim'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'junegunn/gv.vim'
 
 Plug 'justinmk/vim-sneak'
 Plug 'tpope/vim-eunuch'
@@ -25,40 +27,39 @@ Plug 'tpope/vim-eunuch'
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
 Plug 'google/vim-glaive'
-Plug 'vim-utils/vim-cscope'
 
-Plug 'majutsushi/tagbar'
 Plug 'airblade/vim-gitgutter'
 Plug 'mhinz/vim-sayonara'
 
 Plug 'lepture/vim-jinja'
-Plug 'crosbymichael/vim-cfmt'
 Plug 'elzr/vim-json', {'for': 'json'}
 Plug 'moorereason/vim-markdownfmt', {'for': 'markdown'}
 Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
-Plug 'racer-rust/vim-racer', {'for': 'rust'}
-Plug 'rust-lang/rust.vim', {'for': 'rust'}
+Plug 'rust-lang/rust.vim'
 Plug 'fatih/vim-go'
 Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
-Plug 'Rip-Rip/clang_complete'
 
+Plug 'racer-rust/vim-racer'
+Plug 'sebastianmarkow/deoplete-rust'
+Plug 'vim-utils/vim-cscope'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
 Plug 'zchee/deoplete-jedi', {'for': 'python'}
+Plug 'python-mode/python-mode', {'for': 'python'}
+Plug 'vim-scripts/a.vim'
+
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 " themes
 Plug 'itchyny/lightline.vim'
-Plug 'nanotech/jellybeans.vim'
-Plug 'morhetz/gruvbox'
-Plug 'NLKNguyen/papercolor-theme'
-Plug 'rakr/vim-one'
-Plug 'rakr/vim-two-firewatch'
-Plug 'sonph/onehalf', { 'rtp': 'vim' }
-Plug 'noahfrederick/vim-hemisu'
+Plug 'chriskempson/base16-vim'
 call plug#end()
 
 call glaive#Install()
@@ -101,11 +102,10 @@ set textwidth=79       " Default maximum textwidth is 79
 " Theme
 set synmaxcol=300      " not slow when highlight long line
 " set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
-set background=dark
-
-let g:jellybeans_use_gui_italics=0
-let g:jellybeans_use_term_italics=0
-colorscheme jellybeans
+if filereadable(expand("~/.vimrc_background"))
+  let base16colorspace=256
+  source ~/.vimrc_background
+endif
 
 set cmdheight=1        " Commandbar height
 set hid                " Change buffer without saving
@@ -135,6 +135,9 @@ set numberwidth=5 "Max number is 99999
 " Resize splits when the window is resized
 au VimResized * :wincmd =
 
+" set direction of split
+set splitright
+
 " Time out on key codes but not mappings.
 " Basically this makes terminal Vim work sanely.
 set notimeout
@@ -160,9 +163,6 @@ set list listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
 set wildmenu
 set wildmode=list:longest,list:full
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.o,*.obj,.git,*.rbc,*.class,*.pyc,.svn,vendor/gems/*
-
-" Tags
-set tags=./tags;
 
 " Let omnifunc and completefunc take precendence
 set complete-=i
@@ -224,8 +224,8 @@ let NERDTreeMinimalUI=1
 let NERDTREEWinSize=30
 nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
-let NERDTreeIgnore = ['\.pyc$', '^__pycache__$']
-let NERDTreeHighlightCursorline=0
+let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\..\.cmd$']
+let NERDTreeHighlightCursorline=1
 let NERDTreeDirArrowExpandable = ""
 let NERDTreeDirArrowCollapsible = ""
 
@@ -250,6 +250,8 @@ nmap <leader><leader> :Files<CR>
 " initialize g:grepper with empty dictionary
 let g:grepper = {}
 runtime autoload/grepper.vim
+" use location list for search to not depend on global quickfix list
+let g:grepper.quickfix = 0
 let g:grepper.rg = {
       \ 'escape': '\^$.*+?()[]{}|',
       \ 'grepformat': '%f:%l:%c:%m',
@@ -266,31 +268,23 @@ nnoremap + <c-a>
 nnoremap - <c-x>
 
 " Python
+let g:pymode_rope_complete_on_dot = 0
 let g:pymode_rope_completion = 0
+let g:pymode_rope_regenerate_on_write = 0
 let g:pymode_options_max_line_length = 120
+let g:pymode_lint_checkers = ['pylint']
 let g:pymode_lint_options_pep8 =
       \ {'max_line_length': g:pymode_options_max_line_length}
 
 " JSON
 let g:vim_json_syntax_conceal = 0
 
-" vim-racer
-let g:racer_cmd = "racer"
-let $RUST_SRC_PATH="/usr/local/rust/src/"
-
-" Cfmt
-let g:cfmt_style = '-linux'
-
 " Markdown
 let g:vim_markdown_conceal = 0
 let g:vim_markdown_new_list_item_indent = 2
 
-" tagbar
-nmap <leader>tt :TagbarToggle<CR>
-
 " lightline
 let g:lightline = {
-      \ 'colorscheme': 'onehalfdark',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ], [ 'readonly', 'relativepath', 'modified' ] ]
       \ }
@@ -300,25 +294,37 @@ let g:lightline = {
 " fix for neovim
 let g:yankring_clipboard_monitor=0
 
+" Language Server
+let g:LanguageClient_serverCommands = {
+    \ 'cpp': ['cquery', '--log-file=/tmp/cq.log'],
+    \ 'c': ['cquery', '--log-file=/tmp/cq.log'],
+    \ 'go': ['go-langserver'],
+    \ }
+
+let g:LanguageClient_loadSettings = 1 " Use an absolute configuration path if you want system-wide settings
+let g:LanguageClient_settingsPath = '/home/dqminh/.config/nvim/settings.json'
+set completefunc=LanguageClient#complete
+set formatexpr=LanguageClient_textDocument_rangeFormatting()
+
+nnoremap <silent> gh :call LanguageClient_textDocument_hover()<CR>
+nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
+nnoremap <silent> gr :call LanguageClient_textDocument_references()<CR>
+nnoremap <silent> gs :call LanguageClient_textDocument_documentSymbol()<CR>
+nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+
 "------------------------------------------------------------------------------
 " FILETYPES
 "------------------------------------------------------------------------------
 
 augroup autoformat_settings
-  autocmd FileType bzl AutoFormatBuffer buildifier
-  " autocmd FileType c,cpp,proto,javascript AutoFormatBuffer clang-format
-  autocmd FileType dart AutoFormatBuffer dartfmt
-  autocmd FileType java AutoFormatBuffer google-java-format
-  autocmd FileType python AutoFormatBuffer yapf
+  "autocmd FileType c,proto AutoFormatBuffer clang-format
+  "autocmd FileType python AutoFormatBuffer yapf
 augroup END
 
-
-
 au BufRead,BufNewFile *.bzl,BUILD,sky setf python.skylark
-
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
-au BufNewFile,BufRead *.xml setlocal noexpandtab
+au BufNewFile,BufRead *.xml setlocal softtabstop=2 tabstop=2 shiftwidth=2
 au BufNewFile,BufRead *.go set nolist
 au BufNewFile,BufRead *.txt setfiletype text
 au BufNewFile,BufRead *.hbs set syntax=mustache
@@ -328,7 +334,6 @@ au BufNewFile,BufRead *.proto setlocal nolist tabstop=4 softtabstop=4 shiftwidth
 au BufNewFile,BufRead *.html set textwidth=999
 au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=120 syntax=off
 au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru} set ft=ruby
-"autocmd BufWritePre *.c,*.h Cfmt
 au FileType text setlocal textwidth=78
 
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
@@ -382,7 +387,23 @@ let g:go_fmt_command = "goimports"
 let g:go_autodetect_gopath = 1
 let g:go_term_enabled = 1
 
+" rust.vim
+let g:rustfmt_autosave = 1
+let g:deoplete#sources#rust#racer_binary='/home/dqminh/.cargo/bin/racer'
+let g:deoplete#sources#rust#rust_source_path='/home/dqminh/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src'
+let g:racer_experimental_completer = 1
+
+augroup go
+  autocmd!
+  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+augroup END
+
 au BufNewFile,BufRead *.go set nolist
+au FileType go nmap <Leader>a  <Plug>(go-alternate-edit)
+au FileType go nmap <Leader>av <Plug>(go-alternate-vertical)
+au FileType go nmap <Leader>as <Plug>(go-alternate-split)
 au FileType go nmap <Leader>s  <Plug>(go-def-split)
 au FileType go nmap <Leader>v  <Plug>(go-def-vertical)
 au FileType go nmap <Leader>i  <Plug>(go-info)
@@ -399,16 +420,14 @@ if has('nvim')
   au FileType go nmap <Leader>rv <Plug>(go-run-vertical)
 endif
 
-augroup go
-  autocmd!
-  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-augroup END
-
 " buf-explorer
 let g:bufExplorerShowRelativePath=1
 
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
 endif
+
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)

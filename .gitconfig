@@ -1,6 +1,6 @@
 [alias]
   # View the SHA, description, and history graph of the latest 20 commits
-  l = log --pretty=oneline -n 20 --graph
+  l = log --oneline --decorate --all -n 20 --graph
   # View the current working tree status using the short format
   s = status -s
   # Diff
@@ -77,6 +77,7 @@
 [user]
   name = Daniel Dao
   email = dqminh89@gmail.com
+  signingkey = 8132944994744A3068B6F53CE59A5D531B20D399
 [push]
   default = current
 [rerere]
