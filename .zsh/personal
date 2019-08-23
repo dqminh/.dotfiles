@@ -1,4 +1,50 @@
-#!/bin/bash
+# Make vim the default editor
+export EDITOR=/usr/bin/nvim
+
+export CLICOLOR=1
+export GOPATH=$HOME
+export PATH=$HOME/bin:$HOME/.bin:$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/go/bin:/usr/local/sbin:$PATH
+export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore-vcs --hidden'
+
+# Larger bash history (allow 32³ entries; default is 500)
+export HISTSIZE=50000000;
+export HISTFILESIZE=$HISTSIZE;
+export HISTCONTROL=ignoredups;
+
+# Prefer US English and use UTF-8
+export LANG="en_US.UTF-8";
+export LC_ALL="en_US.UTF-8";
+
+# Don’t clear the screen after quitting a manual page
+export MANPAGER="less -X";
+
+# hidpi for gtk apps
+export GDK_SCALE=2
+export GDK_DPI_SCALE=0.5
+export QT_DEVICE_PIXEL_RATIO=2
+
+# kubernetes
+export PATH=$HOME/src/k8s.io/kubernetes/_output/local/bin/linux/amd64:$PATH
+# Load the kubectl completion code for zsh[1] into the current shell
+command -v kubectl &> /dev/null && source <(kubectl completion zsh)
+export PATH=$HOME/.gem/ruby/2.4.0/bin:$PATH
+
+# golang
+if [[ "$(pwd)" == "$HOME/go" || "$(pwd)" == "$HOME/go/*" ]]; then
+  export GOPATH=$HOME/go
+else
+  export GOPATH=$HOME
+fi
+
+# https://github.com/bazelbuild/rules_docker/issues/57
+export BAZEL_PYTHON=/usr/bin/python2
+
+export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
+
+export LUA_PATH='/home/dqminh/.luarocks/share/lua/5.1/?.lua;/home/dqminh/.luarocks/share/lua/5.1/?/init.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/share/lua/5.1/?/init.lua;./?.lua;/usr/local/lib/lua/5.1/?.lua;/usr/local/lib/lua/5.1/?/init.lua;/usr/share/lua/5.1/?.lua;/usr/share/lua/5.1/?/init.lua'
+export LUA_CPATH='/home/dqminh/.luarocks/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/?.so;./?.so;/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;/usr/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/loadall.so'
 
 # convert bytes to human readable text
 function byteme()
@@ -92,16 +138,12 @@ cilium-up() {
 }
 
 minikube-up() {
-  sudo mkdir /var/run/kubernetes
-  sudo chown -R dqminh /var/run/kubernetes
   minikube start --network-plugin=cni --vm-driver=kvm2
 }
 
 dind-kube() {
   export BUILD_KUBEADM=y
   export BUILD_HYPERKUBE=y
-  sudo mkdir /var/run/kubernetes
-  sudo chown -R dqminh /var/run/kubernetes
   local cmd="$HOME/src/github.com/Mirantis/kubeadm-dind-cluster/dind-cluster.sh"
   $cmd "$@"
 }

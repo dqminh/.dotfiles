@@ -21,7 +21,7 @@
   undopush = push -f origin HEAD^:master
   st = status
   co = checkout
-  cs = commit -s
+  cs = commit -sS
   cp = cherry-pick
 
   # golang codereview
@@ -86,3 +86,5 @@
   cookiefile = /Users/dqminh/.gitcookies
 [web]
   browser = open
+[commit]
+	gpgsign = true

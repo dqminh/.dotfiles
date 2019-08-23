@@ -16,10 +16,14 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-rhubarb'
-Plug 'mhinz/vim-grepper'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/gv.vim'
+Plug 'fatih/vim-go'
+Plug 'Shougo/echodoc.vim'
+Plug 'majutsushi/tagbar'
+
+Plug 'junegunn/fzf.vim'
 
 Plug 'justinmk/vim-sneak'
 Plug 'tpope/vim-eunuch'
@@ -34,20 +38,17 @@ Plug 'mhinz/vim-sayonara'
 Plug 'lepture/vim-jinja'
 Plug 'elzr/vim-json', {'for': 'json'}
 Plug 'moorereason/vim-markdownfmt', {'for': 'markdown'}
-Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
 Plug 'rust-lang/rust.vim'
-Plug 'fatih/vim-go'
 Plug 'robbles/logstash.vim'
 Plug 'saltstack/salt-vim'
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
 
-Plug 'racer-rust/vim-racer'
-Plug 'sebastianmarkow/deoplete-rust'
 Plug 'vim-utils/vim-cscope'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-go', { 'do': 'make', 'for': 'go'}
-Plug 'zchee/deoplete-jedi', {'for': 'python'}
-Plug 'python-mode/python-mode', {'for': 'python'}
 Plug 'vim-scripts/a.vim'
+Plug 'janko-m/vim-test'
 
 Plug 'autozimu/LanguageClient-neovim', {
     \ 'branch': 'next',
@@ -97,11 +98,11 @@ set undolevels=700     " Set how many undo vim has to remember
 set autoread           " Set autoread when a file is changed from outside
 set history=1000       " Sets how many lines of history vim has to remember
 set so=7               " Set 7 lines to the cursor when moving vertical
-set textwidth=79       " Default maximum textwidth is 79
+set textwidth=88       " Default maximum textwidth is 88
 
 " Theme
 set synmaxcol=300      " not slow when highlight long line
-" set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
+set colorcolumn=80,120 " Highlight column 80 and 120 to remind us that we should open a new line
 if filereadable(expand("~/.vimrc_background"))
   let base16colorspace=256
   source ~/.vimrc_background
@@ -123,7 +124,6 @@ set softtabstop=2
 set shiftround
 set shiftwidth=2
 set expandtab
-set modelines=0
 set showmode
 set showmatch
 set gdefault
@@ -167,14 +167,20 @@ set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.o,*.obj,.git,*.rbc,*.class,*.pyc,.svn
 " Let omnifunc and completefunc take precendence
 set complete-=i
 set completeopt=menu,menuone,longest,noselect " no scratch
-set iskeyword+=- " do not use - as a word separator
+set iskeyword-=- " do not use - as a word separator
 
 " Remove whitespace on save
-autocmd BufEnter * EnableStripWhitespaceOnSave
+let g:better_whitespace_enabled=1
+let g:strip_whitespace_on_save=1
+let g:strip_whitespace_confirm=0
+
 
 "------------------------------------------------------------------------------
 " KEYMAPS
 "------------------------------------------------------------------------------
+
+" Terminal settings
+tnoremap <Leader><ESC> <C-\><C-n>
 
 " <Leader>1: Toggle between paste mode
 nnoremap <silent> <Leader>1 :set paste!<cr>
@@ -224,7 +230,7 @@ let NERDTreeMinimalUI=1
 let NERDTREEWinSize=30
 nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
-let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\..\.cmd$']
+let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\.o.d$', '\..\.cmd$', '\.egg-info$', '\.ko$', '\.mod.c$', '\.order$', '\.symvers$', '\.ko.cmd$']
 let NERDTreeHighlightCursorline=1
 let NERDTreeDirArrowExpandable = ""
 let NERDTreeDirArrowCollapsible = ""
@@ -242,23 +248,19 @@ nnoremap <silent> <leader>W :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl
 
 " NERDCommenter
 map <leader>/ <plug>NERDCommenterToggle<CR>
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+" Add your own custom formats or override the defaults
+let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
 
 " fzf
 nmap <leader><leader> :Files<CR>
-
-" vim-grepper
-" initialize g:grepper with empty dictionary
-let g:grepper = {}
-runtime autoload/grepper.vim
-" use location list for search to not depend on global quickfix list
-let g:grepper.quickfix = 0
-let g:grepper.rg = {
-      \ 'escape': '\^$.*+?()[]{}|',
-      \ 'grepformat': '%f:%l:%c:%m',
-      \ 'grepprg': 'rg -H --no-heading --vimgrep --smart-case --hidden'}
-" bind leader-k to grep word under cursor
-nnoremap <leader>k :Grepper -tool rg -open -switch -cword -noprompt<cr>
-nmap <leader>f :Grepper -tool rg<cr>
+nmap <leader>f :Rg<space>
+nnoremap F :execute ':Rg '.expand('<cword>')<CR>
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>
@@ -266,15 +268,6 @@ nnoremap <CR> :noh<CR><CR>
 " +/-: Increment number
 nnoremap + <c-a>
 nnoremap - <c-x>
-
-" Python
-let g:pymode_rope_complete_on_dot = 0
-let g:pymode_rope_completion = 0
-let g:pymode_rope_regenerate_on_write = 0
-let g:pymode_options_max_line_length = 120
-let g:pymode_lint_checkers = ['pylint']
-let g:pymode_lint_options_pep8 =
-      \ {'max_line_length': g:pymode_options_max_line_length}
 
 " JSON
 let g:vim_json_syntax_conceal = 0
@@ -296,21 +289,71 @@ let g:yankring_clipboard_monitor=0
 
 " Language Server
 let g:LanguageClient_serverCommands = {
-    \ 'cpp': ['cquery', '--log-file=/tmp/cq.log'],
-    \ 'c': ['cquery', '--log-file=/tmp/cq.log'],
-    \ 'go': ['go-langserver'],
-    \ }
+      \ 'go': ['~/bin/gopls'],
+      \ 'rust': ['~/.cargo/bin/rustup', 'run', 'stable', 'rls'],
+      \ 'c': ['ccls', '--log-file=/tmp/cc.log'],
+      \ 'cpp': ['ccls', '--log-file=/tmp/cc.log'],
+      \ 'python': ['pyls', '--log-file=/tmp/pyls.log'],
+      \ }
 
+let g:LanguageClient_rootMarkers = {
+      \ 'cpp': ['compile_commands.json', 'build'],
+      \ 'c': ['compile_commands.json', 'build'],
+      \ }
+
+" https://github.com/autozimu/LanguageClient-neovim/issues/379 LSP snippet is not supported
+let g:LanguageClient_hasSnippetSupport = 0
 let g:LanguageClient_loadSettings = 1 " Use an absolute configuration path if you want system-wide settings
 let g:LanguageClient_settingsPath = '/home/dqminh/.config/nvim/settings.json'
 set completefunc=LanguageClient#complete
-set formatexpr=LanguageClient_textDocument_rangeFormatting()
 
-nnoremap <silent> gh :call LanguageClient_textDocument_hover()<CR>
-nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> gr :call LanguageClient_textDocument_references()<CR>
-nnoremap <silent> gs :call LanguageClient_textDocument_documentSymbol()<CR>
-nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+" vim-go
+let g:go_def_mode= "gopls"
+let g:go_fmt_command = "goimports"
+let g:go_autodetect_gopath = 1
+
+autocmd BufWritePre *.go :call LanguageClient#textDocument_formatting_sync()
+" autocmd BufWritePre *.py :call LanguageClient#textDocument_formatting_sync()
+
+nnoremap <leader>gd :call LanguageClient#textDocument_definition()<CR>
+nnoremap <leader>gr :call LanguageClient#textDocument_rename()<CR>
+nnoremap <leader>gt :call LanguageClient#textDocument_typeDefinition()<CR>
+nnoremap <leader>gx :call LanguageClient#textDocument_references()<CR>
+nnoremap <leader>ga :call LanguageClient_workspace_applyEdit()<CR>
+nnoremap <leader>gh :call LanguageClient#textDocument_hover()<CR>
+nnoremap <leader>gz :call LanguageClient#textDocument_formatting_sync()<CR>
+nnoremap <leader>zf :call LanguageClient#textDocument_rangeFormatting_sync()<CR>
+nnoremap <leader>gs :call LanguageClient_textDocument_documentSymbol()<CR>
+nnoremap <leader>gm :call LanguageClient_contextMenu()<CR>
+
+
+" caller
+au FileType c,cpp nn <silent> xc :call LanguageClient#findLocations({'method':'$ccls/call'})<cr>
+" callee
+au FileType c,cpp nn <silent> xC :call LanguageClient#findLocations({'method':'$ccls/call','callee':v:true})<cr>
+au FileType c setlocal noexpandtab
+
+augroup LanguageClient_config
+  au!
+  au BufEnter * let b:Plugin_LanguageClient_started = 0
+  au User LanguageClientStarted setl signcolumn=yes
+  au User LanguageClientStarted let b:Plugin_LanguageClient_started = 1lways draw the signcolumn.
+  set signcolumn=yes
+
+  au User LanguageClientStopped setl signcolumn=auto
+  au User LanguageClientStopped let b:Plugin_LanguageClient_stopped = 0
+augroup END
+
+" these "Ctrl mappings" work well when Caps Lock is mapped to Ctrl
+nmap <silent> t<C-n> :TestNearest<CR> " t Ctrl+n
+nmap <silent> t<C-f> :TestFile<CR>    " t Ctrl+f
+nmap <silent> t<C-s> :TestSuite<CR>   " t Ctrl+s
+nmap <silent> t<C-l> :TestLast<CR>    " t Ctrl+l
+nmap <silent> t<C-g> :TestVisit<CR>   " t Ctrl+g
+let test#strategy = "neovim"
+
+" tag bar
+nmap <F8> :TagbarToggle<CR>
 
 "------------------------------------------------------------------------------
 " FILETYPES
@@ -321,6 +364,7 @@ augroup autoformat_settings
   "autocmd FileType python AutoFormatBuffer yapf
 augroup END
 
+au BufRead,BufNewFile *.wuffs setf go
 au BufRead,BufNewFile *.bzl,BUILD,sky setf python.skylark
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
@@ -342,7 +386,7 @@ au FileType text setlocal textwidth=78
 " add a mapping on .. to view parent tree
 au BufReadPost fugitive://* set bufhidden=delete
 au BufReadPost fugitive://*
-  \ if fugitive#buffer().type() =~# '^\%(tree\|blob\)$' |
+  \ if get(b:, 'fugitive_type', '') =~# '^\%(tree\|blob\)$' |
   \   nnoremap <buffer> .. :edit %:h<CR> |
   \ endif
 
@@ -374,51 +418,11 @@ if has('nvim')
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~ '\s'
   endfunction"}}}
-
-  " clang_complete
-  let g:clang_complete_auto = 0
-  let g:clang_auto_select = 0
-  let g:clang_omnicppcomplete_compliance = 0
-  let g:clang_make_default_keymappings = 0
 endif
-
-" vim-go
-let g:go_fmt_command = "goimports"
-let g:go_autodetect_gopath = 1
-let g:go_term_enabled = 1
 
 " rust.vim
 let g:rustfmt_autosave = 1
-let g:deoplete#sources#rust#racer_binary='/home/dqminh/.cargo/bin/racer'
-let g:deoplete#sources#rust#rust_source_path='/home/dqminh/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src'
-let g:racer_experimental_completer = 1
-
-augroup go
-  autocmd!
-  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-augroup END
-
-au BufNewFile,BufRead *.go set nolist
-au FileType go nmap <Leader>a  <Plug>(go-alternate-edit)
-au FileType go nmap <Leader>av <Plug>(go-alternate-vertical)
-au FileType go nmap <Leader>as <Plug>(go-alternate-split)
-au FileType go nmap <Leader>s  <Plug>(go-def-split)
-au FileType go nmap <Leader>v  <Plug>(go-def-vertical)
-au FileType go nmap <Leader>i  <Plug>(go-info)
-au FileType go nmap <leader>r  <Plug>(go-run)
-au FileType go nmap <leader>b  <Plug>(go-build)
-au FileType go nmap <leader>t  <Plug>(go-test)
-au FileType go nmap <leader>dt <Plug>(go-test-compile)
-au FileType go nmap <Leader>d  <Plug>(go-doc)
-au FileType go nmap <Leader>e  <Plug>(go-rename)
-
-if has('nvim')
-  au FileType go nmap <leader>rt <Plug>(go-run-tab)
-  au FileType go nmap <Leader>rs <Plug>(go-run-split)
-  au FileType go nmap <Leader>rv <Plug>(go-run-vertical)
-endif
+au FileType rust set formatexpr=LanguageClient#textDocument_rangeFormatting_sync()
 
 " buf-explorer
 let g:bufExplorerShowRelativePath=1

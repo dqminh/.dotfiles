@@ -10,8 +10,7 @@ load=(
   ~/.zsh/alias
   ~/.zsh/completion
   ~/.zsh/default
-  ~/.zsh/export
-  ~/.zsh/functions
+  ~/.zsh/personal
   ~/.zsh/history
   ~/.zsh/z
   ~/.fzf.zsh

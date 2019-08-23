@@ -3,10 +3,10 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.10.3
-RUST_VERSION=1.22.1
+GO_VERSION=1.12.7
+RUST_VERSION=1.30.1
 NEOVIM_VERSION=0.3.0
-DOCKER_COMPOSE_VERSION=1.17.1
+DOCKER_COMPOSE_VERSION=1.23.1
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -34,19 +34,19 @@ apt_sources() {
  		wget \
  		--no-install-recommends
 
-	srun add-apt-repository -y ppa:neovim-ppa/stable
 	cat <<-EOF | sudo tee /etc/apt/sources.list.d/laptop.list
-deb https://atlassian.artifactoryonline.com/atlassian/hipchat-apt-client zesty main
-deb https://dl.google.com/linux/chrome/deb/ stable main
-deb [arch=amd64] https://download.docker.com/linux/ubuntu zesty stable
+deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main
+deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main
+deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main
 EOF
 
-	# install hipchat key
-	srun sh -c "wget -O - https://atlassian.artifactoryonline.com/atlassian/api/gpg/key/public | apt-key add -"
 	# Import the Google Chrome public key
 	srun sh -c "curl https://dl.google.com/linux/linux_signing_key.pub | apt-key add -"
 	# add docker gpg key
 	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+	# add llvm
+	srun sh -c "wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -"
 
 	# turn off translations, speed up apt-get update
 	srun mkdir -p /etc/apt/apt.conf.d
@@ -98,8 +98,10 @@ apt_pkg() {
 		pinentry-curses \
 		python \
 		python-pip \
+		python-setuptools \
 		python3 \
 		python3-pip \
+		python3-setuptools \
 		s3cmd \
 		scdaemon \
 		ssh \
@@ -117,6 +119,12 @@ apt_pkg() {
 		mercurial \
 		pkg-config \
 		ufw \
+		--no-install-recommends
+
+	srun apt-get install -y clang-6.0 clang-tools-6.0 clang-6.0-doc libclang-common-6.0-dev \
+		libclang-6.0-dev libclang1-6.0 libllvm6.0 lldb-6.0 llvm-6.0 \
+		llvm-6.0-dev llvm-6.0-doc llvm-6.0-examples llvm-6.0-runtime clang-format-6.0 \
+		python-clang-6.0 \
 		--no-install-recommends
 
 	srun apt-get autoremove
@@ -177,13 +185,13 @@ neovim_pkg() {
 
 go_pkg() {
 	export GOPATH=/home/dqminh
-	run go get github.com/golang/lint/golint
+	run go get golang.org/x/lint
 	run go get golang.org/x/tools/cmd/cover
 	run go get golang.org/x/review/git-codereview
 	run go get golang.org/x/tools/cmd/goimports
 	run go get golang.org/x/tools/cmd/gorename
 	run go get golang.org/x/tools/cmd/guru
-	run go get github.com/nsf/gocode
+	run go get github.com/mdempsky/gocode
 	run go get github.com/rogpeppe/godef
 	run go get github.com/shurcooL/markdownfmt
 }
@@ -214,10 +222,6 @@ config_install() {
 }
 
 themes_install() {
-	mkdir -p ~/.themes
-	cd ~/.themes && curl -L \
-		https://github.com/godlyranchdressing/Minwaita/releases/download/V1.6/Minwaita-OSX.tar.gz | tar xvz
-
 	mkdir -p ~/.config
 	git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
 }
