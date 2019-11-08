@@ -30,7 +30,7 @@ Cargo.lock
 .dqminh-local
 .ycm_extra_conf.py
 compile_commands.json
-.ccls-cache
+.ccls-cache/
 
 *.so
 *.svg

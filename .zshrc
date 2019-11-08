@@ -1,6 +1,8 @@
 bindkey -e # use emacs mode explicitly
 # do not print out garbage in gnome-terminal when copy-paste
 set -g set-clipboard off
+# interactive comment
+set -k
 
 BASE16_SHELL=$HOME/.config/base16-shell/
 [ -n "$PS1" ] && [ -s $BASE16_SHELL/profile_helper.sh ] && eval "$($BASE16_SHELL/profile_helper.sh)"
@@ -10,6 +12,7 @@ load=(
   ~/.zsh/alias
   ~/.zsh/completion
   ~/.zsh/default
+  ~/.zsh/functions
   ~/.zsh/personal
   ~/.zsh/history
   ~/.zsh/z

@@ -1,1 +1,1 @@
-/home/dqminh/src/github.com/dqminh/dotfiles/.zsh
+/home/dqminh/.dotfiles/.zsh

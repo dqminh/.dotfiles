@@ -20,11 +20,6 @@ export LC_ALL="en_US.UTF-8";
 # Don’t clear the screen after quitting a manual page
 export MANPAGER="less -X";
 
-# hidpi for gtk apps
-export GDK_SCALE=2
-export GDK_DPI_SCALE=0.5
-export QT_DEVICE_PIXEL_RATIO=2
-
 # kubernetes
 export PATH=$HOME/src/k8s.io/kubernetes/_output/local/bin/linux/amd64:$PATH
 # Load the kubectl completion code for zsh[1] into the current shell
@@ -38,13 +33,7 @@ else
   export GOPATH=$HOME
 fi
 
-# https://github.com/bazelbuild/rules_docker/issues/57
-export BAZEL_PYTHON=/usr/bin/python2
-
 export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
-
-export LUA_PATH='/home/dqminh/.luarocks/share/lua/5.1/?.lua;/home/dqminh/.luarocks/share/lua/5.1/?/init.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/share/lua/5.1/?/init.lua;./?.lua;/usr/local/lib/lua/5.1/?.lua;/usr/local/lib/lua/5.1/?/init.lua;/usr/share/lua/5.1/?.lua;/usr/share/lua/5.1/?/init.lua'
-export LUA_CPATH='/home/dqminh/.luarocks/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/?.so;./?.so;/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;/usr/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/loadall.so'
 
 # convert bytes to human readable text
 function byteme()
@@ -86,81 +75,4 @@ function socks5() {
 
 function chrome-proxy { nohup google-chrome --proxy-server 127.0.0.1:6666 2>&1 >/dev/null & }
 
-kube-up() {
-  local net_plugin=$1
-  sudo mkdir /var/run/kubernetes
-  sudo chown -R dqminh /var/run/kubernetes
-
-  if [[ "$net_plugin" == "kubenet" || -z $net_plugin ]]; then
-    sudo rm /etc/cni/net.d/*
-    export NET_PLUGIN=kubenet
-  elif [[ "$net_plugin" == "cilium" ]]; then
-    ip=10.0.0.1
-    sudo cat <<- EOF > /etc/cni/net.d/10-cilium-cni.conf
-{
-  "name": "cilium",
-  "type": "cilium-cni",
-  "mtu": 1450
-}
-EOF
-    export NET_PLUGIN=cni
-    export SERVICE_CLUSTER_IP_RANGE=$(echo -n $ip | sed 's/\.1$/\.0/')/24
-    export FIRST_SERVICE_CLUSTER_IP=${ip}
-    export KUBE_ENABLE_CLUSTER_DNS=true
-    export KUBE_DNS_SERVER_IP=$(echo -n $ip | sed 's/\.1$/\.10/')
-  fi
-
-  cat <<- EOF > $HOME/.kube/resolv.conf
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-EOF
-  # for systemd-resolved host
-  export KUBELET_FLAGS="--resolv-conf=$HOME/.kube/resolv.conf --fail-swap-on=false"
-
-  export ALLOW_PRIVILEGED=true
-  export LOG_LEVEL=20
-  kubernetes_dir=$HOME/src/k8s.io/kubernetes
-  cd $kubernetes_dir
-  ./hack/local-up-cluster.sh
-}
-
-cilium-up() {
-  debug=$1
-
-  sudo killall cilium-agent
-  export K8S_NODE_NAME=127.0.0.1
-  args=(--kvstore etcd --kvstore-opt etcd.address=127.0.0.1:2379 )
-  args+=(-t overlay --k8s-kubeconfig-path /var/run/kubernetes/kubelet.kubeconfig)
-  if [[ "$debug" == "debug" ]]; then
-    args+=(--debug)
-  fi
-  sudo -E cilium-agent "${args[@]}" >> /tmp/cilium-agent.log
-}
-
-minikube-up() {
-  minikube start --network-plugin=cni --vm-driver=kvm2
-}
-
-dind-kube() {
-  export BUILD_KUBEADM=y
-  export BUILD_HYPERKUBE=y
-  local cmd="$HOME/src/github.com/Mirantis/kubeadm-dind-cluster/dind-cluster.sh"
-  $cmd "$@"
-}
-
 datenow() { date -u +%Y-%m-%dT%H:%M:%SZ }
-
-
-git_apocalypse() {
-  read -q "REPLY?This reset your git state. Are you sure ?: "
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    git stash
-    git clean -xfd
-    git submodule foreach --recursive git clean -xfd
-    git reset --hard
-    git submodule foreach --recursive git reset --hard
-    git submodule update --init --recursive
-  fi
-}

@@ -3,9 +3,9 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.12.7
+GO_VERSION=1.13.4
 RUST_VERSION=1.30.1
-NEOVIM_VERSION=0.3.0
+NEOVIM_VERSION=0.4.2
 DOCKER_COMPOSE_VERSION=1.23.1
 USER=dqminh
 
@@ -211,6 +211,7 @@ config_install() {
 	[".zsh"]=".zsh"
 	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
 	["nvim/init.vim"]=".config/nvim/init.vim"
+	["nvim/coc-settings.json"]=".config/nvim/coc-settings.json"
 	)
 
 	run mkdir -p $HOME/.config/nvim
