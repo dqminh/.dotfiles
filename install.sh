@@ -3,10 +3,11 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.13.4
+GO_VERSION=1.16.6
+CURL_VERSION=7.72.0
 RUST_VERSION=1.30.1
 NEOVIM_VERSION=0.4.2
-DOCKER_COMPOSE_VERSION=1.23.1
+DOCKER_COMPOSE_VERSION=1.25.5
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -35,18 +36,11 @@ apt_sources() {
  		--no-install-recommends
 
 	cat <<-EOF | sudo tee /etc/apt/sources.list.d/laptop.list
-deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main
 deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
-deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main
-deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main
 EOF
 
-	# Import the Google Chrome public key
-	srun sh -c "curl https://dl.google.com/linux/linux_signing_key.pub | apt-key add -"
 	# add docker gpg key
 	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
-	# add llvm
-	srun sh -c "wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -"
 
 	# turn off translations, speed up apt-get update
 	srun mkdir -p /etc/apt/apt.conf.d
@@ -97,7 +91,6 @@ apt_pkg() {
 		openconnect \
 		pinentry-curses \
 		python \
-		python-pip \
 		python-setuptools \
 		python3 \
 		python3-pip \
@@ -121,10 +114,7 @@ apt_pkg() {
 		ufw \
 		--no-install-recommends
 
-	srun apt-get install -y clang-6.0 clang-tools-6.0 clang-6.0-doc libclang-common-6.0-dev \
-		libclang-6.0-dev libclang1-6.0 libllvm6.0 lldb-6.0 llvm-6.0 \
-		llvm-6.0-dev llvm-6.0-doc llvm-6.0-examples llvm-6.0-runtime clang-format-6.0 \
-		python-clang-6.0 \
+	srun apt-get install -y clang clang-tools libclang-dev libclang1 llvm clang-format \
 		--no-install-recommends
 
 	srun apt-get autoremove
@@ -144,8 +134,7 @@ apt_pkg() {
 
 	srun ufw enable
 
-	pip install neovim
-	pip3 install neovim
+	pip3 install neovim pynvim
 }
 
 rust_install() {
@@ -200,6 +189,18 @@ fonts_install() {
 	mkdir -p $HOME/.local/share
 	link fonts .local/share/fonts
 	fc-cache -fv
+}
+
+curl_install() {
+	`curl version | grep "${CURL_VERSION}"` && return 0
+	srun apt-get install -y build-essential nghttp2 libnghttp2-dev libssl-dev
+	wget https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz
+	tar -xzvf curl-${CURL_VERSION}.tar.gz && rm -f curl-${CURL_VERSION}.tar.gz && cd curl-${CURL_VERSION}
+	./configure --prefix=/usr/local --with-ssl --with-nghttp2
+	make
+	srun make install
+	srun ldconfig
+	cd .. && rm -rf curl-${CURL_VERSION}
 }
 
 config_install() {
@@ -258,6 +259,9 @@ main() {
 		rust)
 			( rust_install )
 			( rust_pkg )
+			;;
+		curl)
+			( curl_install )
 			;;
 		fonts)
 			( fonts_install )

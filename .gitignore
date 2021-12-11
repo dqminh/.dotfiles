@@ -40,3 +40,12 @@ compile_commands.json
 
 tags
 .uuid
+.vim
+
+mkosi.rootpw
+*.pac
+.envrc
+.idea/
+
+coredumps/
+pprof-archive/

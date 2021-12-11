@@ -4,7 +4,6 @@ set encoding=utf-8
 
 call plug#begin()
 Plug 'scrooloose/nerdtree'
-Plug 'Yggdroot/indentLine'
 Plug 'jlanzarotta/bufexplorer'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'junegunn/vim-easy-align'
@@ -14,14 +13,14 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-rhubarb'
 Plug 'vim-scripts/YankRing.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/gv.vim'
-Plug 'Shougo/echodoc.vim'
-Plug 'majutsushi/tagbar'
 Plug 'mhinz/vim-grepper'
 Plug 'jiangmiao/auto-pairs'
+Plug 'tpope/vim-rhubarb'
+
+Plug 'liuchengxu/vim-clap', { 'do': ':Clap install-binary' }
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -30,28 +29,22 @@ Plug 'justinmk/vim-sneak'
 Plug 'tpope/vim-eunuch'
 
 Plug 'airblade/vim-gitgutter'
-Plug 'mhinz/vim-sayonara'
 
-Plug 'fatih/vim-go'
-Plug 'lepture/vim-jinja'
-Plug 'elzr/vim-json', {'for': 'json'}
-Plug 'moorereason/vim-markdownfmt', {'for': 'markdown'}
-Plug 'robbles/logstash.vim'
+Plug 'google/vim-maktaba'
+Plug 'bazelbuild/vim-bazel'
+
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'sheerun/vim-polyglot'
 Plug 'saltstack/salt-vim'
-Plug 'b4b4r07/vim-hcl'
-
-Plug 'vim-utils/vim-cscope'
-Plug 'vim-scripts/a.vim'
-
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
+Plug 'teal-language/vim-teal'
 
 " themes
+Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-airline/vim-airline'
 Plug 'chriskempson/base16-vim'
+Plug 'rafi/awesome-vim-colorschemes'
+Plug 'haishanh/night-owl.vim'
+Plug 'sonph/onehalf', {'rtp': 'vim/'}
 call plug#end()
 
 filetype plugin indent on
@@ -94,19 +87,12 @@ set so=7                       " Set 7 lines to the cursor when moving vertical
 set textwidth=88               " Default maximum textwidth is 88
 set synmaxcol=300              " not slow when highlight long line
 set colorcolumn=80,120         " Highlight column 80 and 120 to remind us that we should open a new line
-set pumblend=20                " pseudo-transparency of popup-menu
-set winblend=20                " pseudo-transparency for floating-window
 set signcolumn=yes             " always so signcolumn
 set cmdheight=1                " Commandbar height
 set scrolloff=5                " keep 5 lines when scrolling
 set laststatus=2               " always display status line
 set number                     " Show line number
 set numberwidth=5              " Max number is 99999
-set title                      " always set terminal title
-set titlelen=95
-let &g:titlestring="
-      \ %{expand('%:p:~:.')}%(%m%r%w%)
-      \ %<\(%{fnamemodify(getcwd(), ':~')}\) - VIM"
 set showtabline=0
 if has('cmdline_info')
   set ruler
@@ -133,7 +119,7 @@ set t_vb=
 set novisualbell
 set belloff=all
 
-set shortmess=atIcF   " Abbreviate messages
+set shortmess+=c   " Abbreviate messages
 set noshowmode " Do not display the completion messages
 set fo=tcrqo " t autowraps text using textwidth
              " c autowraps comments using textwidth
@@ -191,14 +177,6 @@ set ttyfast
 " shada instead of viminfo
 set shada=!,'300,<50,s10,h
 
-" Completion setting.
-set completeopt=menuone
-if exists('+completepopup')
-  set completeopt+=popup
-  set completepopup=height:4,width:60,highlight:InfoPopup
-endif
-" Don't complete from other buffer.
-set complete=.
 " Set popup menu max height.
 set pumheight=20
 set iskeyword-=- " do not use - as a word separator
@@ -207,7 +185,6 @@ set inccommand=nosplit " Shows the effects of a command incrementally, as you ty
 
 " PLUGINS
 
-let g:deoplete#enable_at_startup = 1
 let g:python_host_prog  = '/usr/bin/python2'
 let g:python3_host_prog = '/usr/bin/python3'
 
@@ -227,13 +204,12 @@ let g:NERDCommentEmptyLines = 1
 let g:NERDTrimTrailingWhitespace = 1
 
 " NerdTree
+let g:NERDTreeAutoDeleteBuffer = 1
 let NERDTreeShowHidden=1
 let NERDTreeMinimalUI=1
 let NERDTREEWinSize=30
 let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\.o.d$', '\..\.cmd$', '\.egg-info$', '\.ko$', '\.mod.c$', '\.order$', '\.symvers$', '\.ko.cmd$']
 let NERDTreeHighlightCursorline=1
-let NERDTreeDirArrowExpandable = ""
-let NERDTreeDirArrowCollapsible = ""
 
 " vim-grepper
 let g:grepper = {
@@ -245,45 +221,8 @@ let g:grepper = {
     \   'grepprg': 'rg -H --no-heading --vimgrep --smart-case --hidden'
     \ }}
 
-" vim-go
-let g:go_def_mode= "gopls"
-let g:go_fmt_command = "goimports"
-let g:go_autodetect_gopath = 1
-
-" Language server
-let g:LanguageClient_serverCommands = {
-    \ 'rust': ['~/.cargo/bin/rustup', 'run', 'stable', 'rls'],
-    \ 'python': ['/home/dqminh/.local/bin/pyls', '--log-file', '/tmp/pyls.log', '-v'],
-    \ 'go': ['/home/dqminh/bin/gopls'],
-    \ 'c': ['/usr/local/bin/ccls'],
-    \ 'cpp': ['/usr/local/bin/ccls'],
-    \ }
-" To use the language server with Vim's formatting operator |gq|
-set formatexpr=LanguageClient#textDocument_rangeFormatting()
-
-" JSON
-let g:vim_json_syntax_conceal = 0
-
-" Markdown
-let g:vim_markdown_conceal = 0
-let g:vim_markdown_new_list_item_indent = 2
-
 " yankring
 let g:yankring_clipboard_monitor=0 " fix for neovim
-
-" buf-explorer
-let g:bufExplorerShowRelativePath=1
-
-" deoplete
-call deoplete#custom#option({
-      \ 'auto_refresh_delay': 10,
-      \ 'camel_case': v:true,
-      \ 'skip_multibyte': v:true,
-      \ 'prev_completion_mode': 'length',
-      \ 'auto_preview': v:true,
-      \ })
-
-
 
 "------------------------------------------------------------------------------
 " KEYMAPS
@@ -301,19 +240,6 @@ nnoremap <silent> <Leader>1 :set paste!<cr>
 " Press Shift+P while in visual mode to replace the selection without
 " overwriting the default register
 vmap P p :call setreg('"', getreg('0')) <CR>
-
-" <TAB>: completion.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ deoplete#manual_complete()
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~ '\s'
-endfunction
-
-" <S-TAB>: completion back.
-inoremap <expr><S-TAB>  pumvisible() ? "\<C-p>" : "\<C-h>"
 
 " Duplicate a selection
 " Visual mode: D
@@ -342,16 +268,16 @@ nmap <leader>cn :cnext<CR>
 nmap <leader>cp :cprevious<CR>
 
 " delete the buffer
-nnoremap <silent> <leader>q :Sayonara!<CR>
+nnoremap <silent> <leader>q :close<CR>
 
 " Nerdtree
 nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
 
 " Fugitive
-nnoremap <leader>gb :Gblame<CR>
-nnoremap <leader>gs :Gstatus<CR>
-nnoremap <leader>gd :Gdiff<CR>
+nnoremap <leader>gb :Git blame<CR>
+nnoremap <leader>gs :Git status<CR>
+nnoremap <leader>gd :Git diff<CR>
 nnoremap <leader>dp :diffput<CR>
 nnoremap <leader>dg :diffget<CR>
 
@@ -378,25 +304,10 @@ nnoremap <CR> :noh<CR><CR>
 nnoremap + <c-a>
 nnoremap - <c-x>
 
-" Language Server
-nnoremap <leader>ld :call LanguageClient#textDocument_definition()<CR>
-nnoremap <leader>lr :call LanguageClient#textDocument_rename()<CR>
-nnoremap <leader>lf :call LanguageClient#textDocument_formatting_sync()<CR>
-nnoremap <leader>lt :call LanguageClient#textDocument_typeDefinition()<CR>
-nnoremap <leader>lx :call LanguageClient#textDocument_references()<CR>
-nnoremap <leader>la :call LanguageClient_workspace_applyEdit()<CR>
-nnoremap <leader>lh :call LanguageClient#textDocument_hover()<CR>
-nnoremap <leader>ls :call LanguageClient_textDocument_documentSymbol()<CR>
-nnoremap <leader>lm :call LanguageClient_contextMenu()<CR>
-
-" tag bar
-nmap <F8> :TagbarToggle<CR>
-
 "------------------------------------------------------------------------------
 " FILETYPES
 "------------------------------------------------------------------------------
 au BufRead,BufNewFile *.wuffs setf go
-au BufRead,BufNewFile *.bzl,BUILD,sky setf python.skylark
 au BufNewFile,BufRead Makefile.* setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.sh setlocal nolist tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab
 au BufNewFile,BufRead *.xml setlocal softtabstop=2 tabstop=2 shiftwidth=2
@@ -409,8 +320,11 @@ au BufNewFile,BufRead *.proto setlocal nolist tabstop=4 softtabstop=4 shiftwidth
 au BufNewFile,BufRead *.html set textwidth=999
 au BufNewFile,BufRead {Dockerfile} setlocal wrap linebreak nolist textwidth=120 syntax=off
 au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru} set ft=ruby
-au BufNewFile,BufRead *.c set noexpandtab tabstop=4 shiftwidth=4
 au FileType text setlocal textwidth=78
+
+" dont match single quote for rust
+au FileType rust let b:AutoPairs = {'(':')', '[':']', '{':'}','"':'"', "`":"`", '```':'```', '"""':'"""', "'''":"'''"}
+au BufRead,BufNewFile Cargo.toml setlocal textwidth=999
 
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
 " hacks from above (the url, not jesus) to delete fugitive buffers when we
@@ -430,6 +344,53 @@ augroup line_return
         \     execute 'normal! g`"zvzz' |
         \ endif
 augroup END
+
+"------------------------------------------------------------------------------
+" LANG SERVER
+"------------------------------------------------------------------------------
+
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current
+" position. Coc only does snippet and additional edit on confirm.
+" <cr> could be remapped by other vim plugin, try `:verbose imap <CR>`.
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+augroup coc
+  autocmd!
+
+  autocmd filetype c,cpp,rust,python,go nmap <silent> gd <Plug>(coc-definition)
+  autocmd filetype c,cpp,rust,python,go nmap <silent> gy <Plug>(coc-type-definition)
+  autocmd filetype c,cpp,rust,python,go nmap <silent> gi <Plug>(coc-implementation)
+  autocmd filetype c,cpp,rust,python,go nmap <silent> gr <Plug>(coc-references)
+
+  " Use K to show documentation in preview window.
+  autocmd filetype c,cpp,rust,python,go nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+  function! s:show_documentation()
+    if (index(['vim','help'], &filetype) >= 0)
+      execute 'h '.expand('<cword>')
+    else
+      call CocAction('doHover')
+    endif
+  endfunction
+
+  " Symbol renaming.
+  autocmd filetype c,cpp,rust,python,go nmap <leader>rn <Plug>(coc-rename)
+
+  " Formatting selected code.
+  autocmd filetype c,cpp,rust,python,go xmap <leader>lf <Plug>(coc-format-selected)
+  autocmd filetype c,cpp,rust,python,go nmap <leader>lf <Plug>(coc-format-selected)
+  autocmd FileType c,cpp,rust,python,go setl formatexpr=CocAction('formatSelected')
+
+  " Do default action for next item.
+  autocmd FileType c,cpp,rust,python,go noremap <silent><nowait> <space>j :<C-u>CocNext<CR>
+  " Do default action for previous item.
+  autocmd FileType c,cpp,rust,python,go nnoremap <silent><nowait> <space>k :<C-u>CocPrev<CR>
+  " Resume latest coc list.
+  autocmd FileType c,cpp,rust,python,go nnoremap <silent><nowait> <space>p :<C-u>CocListResume<CR>
+
+  autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
+augroup end
 
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
