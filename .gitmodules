@@ -13,3 +13,6 @@
 [submodule "zsh-histdb"]
 	path = zsh-histdb
 	url = https://github.com/larkery/zsh-histdb
+[submodule "catpuccin-iterm"]
+	path = catpuccin-iterm
+	url = https://github.com/catppuccin/iterm.git

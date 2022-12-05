@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/bin/zsh
 set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
 GO_VERSION=1.19.1
 RUST_VERSION=1.63.0
+NEOVIM_VERSION=0.8.1
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -22,6 +23,14 @@ link() { run rm -rf $HOME/$2 && run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
 scopy() { srun rm -f $2 && srun cp $CUR/$1 $2 ; }
 
+osx_pkg() {
+	if ! test /opt/homebrew/bin/brew; then
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+		[[ -f /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+	fi
+	brew install neovim tmux go rust
+}
+
 # sets up apt sources
 # assumes you are going to use debian-based distro
 apt_sources() {
@@ -36,23 +45,25 @@ apt_sources() {
  		--no-install-recommends
 
 	# install docker
-	srun mkdir -p /etc/apt/keyrings
-	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
-	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-	# install neovim
-	srun add-apt-repository ppa:neovim-ppa/stable
+	if [[ -f /etc/apt/sources.list.d/docker.list ]]; then
+		srun mkdir -p /etc/apt/keyrings
+		srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	fi
 
 	# install nodejs
 	curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - sudo apt-get install -y nodejs
 
 	# turn off translations, speed up apt-get update
-	srun mkdir -p /etc/apt/apt.conf.d
-	srun sh -c "echo 'Acquire::Languages \"none\";' > /etc/apt/apt.conf.d/99translations"
+	if [[ ! -f /etc/apt/apt.conf.d/99translations ]]; then
+		srun mkdir -p /etc/apt/apt.conf.d
+		srun sh -c "echo 'Acquire::Languages \"none\";' > /etc/apt/apt.conf.d/99translations"
+	fi
 }
 
 apt_pkg() {
 	srun apt-get update
+	apt_sources
 	srun apt-get -y upgrade
 
 	srun apt-get install -y \
@@ -89,7 +100,6 @@ apt_pkg() {
 		lsof \
 		make \
 		mount \
-		neovim \
 		net-tools \
 		network-manager \
 		luarocks \
@@ -116,7 +126,6 @@ apt_pkg() {
 		mercurial \
 		pkg-config \
 		ufw \
-		neovim \
 		docker-compose-plugin \
 		--no-install-recommends
 
@@ -135,15 +144,27 @@ apt_pkg() {
 	# setup persistent journal
 	srun mkdir -p /var/log/journal
 
-	# neovim is vim
-	srun update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
-	srun update-alternatives --auto vi
-	srun update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
-	srun update-alternatives --auto vim
-	srun update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
-	srun update-alternatives --auto editor
-
 	srun ufw enable
+}
+
+neovim_install() {
+	[[ `/usr/local/bin/nvim --version` =~ "${NEOVIM_VERSION}" ]] && return 0
+
+	srun apt-get install ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl doxygen
+
+	mkdir -p ~/workspace
+	if [[ ! -f ~/workspace/neovim ]]; then
+		git clone https://github.com/neovim/neovim.git ~/workspace/neovim
+	fi
+	cd ~/workspace/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && sudo make install
+
+	# neovim is vim
+	srun update-alternatives --install /usr/bin/vi vi /usr/local/bin/nvim 60
+	srun update-alternatives --auto vi
+	srun update-alternatives --install /usr/bin/vim vim /usr/local/bin/nvim 60
+	srun update-alternatives --auto vim
+	srun update-alternatives --install /usr/bin/editor editor /usr/local/bin/nvim 60
+	srun update-alternatives --auto editor
 }
 
 rust_install() {
@@ -152,32 +173,24 @@ rust_install() {
 }
 
 rust_pkg() {
-	run /home/dqminh/.cargo/bin/cargo install ripgrep
-	run sh -c "curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz | gunzip -c - > ~/.local/bin/rust-analyzer"
-	run chmod +x ~/.local/bin/rust-analyzer
+	run $HOME/.cargo/bin/cargo install ripgrep
 }
 
 go_install() {
 	[[ `/usr/local/go/bin/go version` =~ "go${GO_VERSION}" ]] && return 0
 	srun rm -rf /usr/local/go
-	srun wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz
+	if [[ "$(uname -m)" == "aarch64" ]]; then
+		srun wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-arm64.tar.gz -O /tmp/go.tar.gz
+	else
+		srun wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz
+	fi
 	srun tar -C /usr/local -xzf /tmp/go.tar.gz
 	srun rm -rf /tmp/go.tar.gz
 	srun chown -R dqminh /usr/local/go
 }
 
 go_pkg() {
-	export GOPATH=/home/dqminh
-	run go install golang.org/x/lint
-	run go install golang.org/x/tools/cmd/cover
-	run go install golang.org/x/review/git-codereview
-	run go install golang.org/x/tools/cmd/goimports
-	run go install golang.org/x/tools/cmd/gorename
-	run go install golang.org/x/tools/cmd/guru
-	run go install github.com/mdempsky/gocode
-	run go install github.com/rogpeppe/godef
-	run go install github.com/shurcooL/markdownfmt
-	run go install github.com/jesseduffield/lazygit@latest
+	run go install github.com/lemonade-command/lemonade@latest
 }
 
 fonts_install() {
@@ -193,7 +206,6 @@ config_install() {
 	[".tmux.conf"]=".tmux.conf"
 	[".zshrc"]=".zshrc"
 	[".zsh"]=".zsh"
-	["zsh-histdb"]=".zsh-histdb"
 	["base16-shell"]=".config/base16-shell"
 	["base16-tmux"]=".config/base16-tmux"
 	["nvim/init.lua"]=".config/nvim/init.lua"
@@ -208,30 +220,28 @@ config_install() {
 
 usage() {
 	echo "Usage:"
-	echo "  apt     - setup packages"
+	echo "  pkg     - setup packages"
 	echo "  config  - setup config files"
-	echo "  golang  - setup go and packages"
-	echo "  rust    - setup rust and packages"
 	echo "  fonts   - setup fonts"
 }
 
 main() {
 	local target=$1
 	case $target in
-		apt)
-			( apt_sources )
-			( apt_pkg )
+		pkg)
+			if [[ "$(uname)" == "Darwin" ]]; then
+				( osx_pkg )
+			else
+				( apt_sources )
+				( apt_pkg )
+				( go_install )
+				( rust_install )
+			fi
+			( go_pkg )
+			( rust_pkg )
 			;;
 		config)
 			( config_install )
-			;;
-		go)
-			( go_install )
-			( go_pkg )
-			;;
-		rust)
-			( rust_install )
-			( rust_pkg )
 			;;
 		fonts)
 			( fonts_install )

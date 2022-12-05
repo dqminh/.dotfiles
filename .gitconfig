@@ -78,7 +78,6 @@
   insteadOf = "gist:"
 [user]
 	name = Daniel Dao
-  signingkey = 21CBC10283775970F40C3FE4ECAB2B462D43B768
 	email = dqminh89@gmail.com
 [push]
   default = current
@@ -88,8 +87,6 @@
 	cookiefile = /home/dqminh/.gitcookies
 [web]
   browser = open
-[commit]
-	gpgsign = true
 [includeIf "gitdir/i:~/cloudflare/"]
 	path = /home/dqminh/.gitconfig_cloudflare
 [includeIf "gitdir/i:~/workspace/"]

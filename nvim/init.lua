@@ -1,4 +1,4 @@
-require 'impatient'
+pcall(require, 'impatient')
 local vim = vim
 local keymap = vim.keymap.set
 local vopt = vim.opt
@@ -102,6 +102,7 @@ local opts = {
 for k, v in pairs(opts) do
   vopt[k] = v
 end
+
 
 require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
