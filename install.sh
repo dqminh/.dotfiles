@@ -3,11 +3,8 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.16.6
-CURL_VERSION=7.72.0
-RUST_VERSION=1.30.1
-NEOVIM_VERSION=0.4.2
-DOCKER_COMPOSE_VERSION=1.25.5
+GO_VERSION=1.19.1
+RUST_VERSION=1.63.0
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -21,26 +18,33 @@ run() {
 }
 srun() { run sudo "$@" ; }
 
-link() { run ln -sf $CUR/$1 $HOME/$2 ; }
+link() { run rm -rf $HOME/$2 && run ln -sf $CUR/$1 $HOME/$2 ; }
 slink() { srun ln -sf $CUR/$1 $HOME/$2 ; }
 scopy() { srun rm -f $2 && srun cp $CUR/$1 $2 ; }
 
 # sets up apt sources
-# assumes you are going to use debian stretch
+# assumes you are going to use debian-based distro
 apt_sources() {
  	srun apt-get update
  	srun apt-get install -y \
+		ca-certificates \
  		software-properties-common \
  		curl \
+		gnupg \
+		lsb-release \
  		wget \
  		--no-install-recommends
 
-	cat <<-EOF | sudo tee /etc/apt/sources.list.d/laptop.list
-deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
-EOF
+	# install docker
+	srun mkdir -p /etc/apt/keyrings
+	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-	# add docker gpg key
-	srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+	# install neovim
+	srun add-apt-repository ppa:neovim-ppa/stable
+
+	# install nodejs
+	curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - sudo apt-get install -y nodejs
 
 	# turn off translations, speed up apt-get update
 	srun mkdir -p /etc/apt/apt.conf.d
@@ -88,11 +92,11 @@ apt_pkg() {
 		neovim \
 		net-tools \
 		network-manager \
+		luarocks \
 		openconnect \
 		pinentry-curses \
-		python \
-		python-setuptools \
 		python3 \
+		python-is-python3 \
 		python3-pip \
 		python3-setuptools \
 		s3cmd \
@@ -112,6 +116,8 @@ apt_pkg() {
 		mercurial \
 		pkg-config \
 		ufw \
+		neovim \
+		docker-compose-plugin \
 		--no-install-recommends
 
 	srun apt-get install -y clang clang-tools libclang-dev libclang1 llvm clang-format \
@@ -126,15 +132,18 @@ apt_pkg() {
 	srun adduser "$USER" docker
 	srun adduser "$USER" systemd-journal
 
-	srun wget https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` -O /usr/local/bin/docker-compose
-	srun chmod +x /usr/local/bin/docker-compose
-
 	# setup persistent journal
 	srun mkdir -p /var/log/journal
 
-	srun ufw enable
+	# neovim is vim
+	srun update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
+	srun update-alternatives --auto vi
+	srun update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
+	srun update-alternatives --auto vim
+	srun update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
+	srun update-alternatives --auto editor
 
-	pip3 install neovim pynvim
+	srun ufw enable
 }
 
 rust_install() {
@@ -144,6 +153,8 @@ rust_install() {
 
 rust_pkg() {
 	run /home/dqminh/.cargo/bin/cargo install ripgrep
+	run sh -c "curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz | gunzip -c - > ~/.local/bin/rust-analyzer"
+	run chmod +x ~/.local/bin/rust-analyzer
 }
 
 go_install() {
@@ -155,52 +166,24 @@ go_install() {
 	srun chown -R dqminh /usr/local/go
 }
 
-neovim_install() {
-	srun rm -rf /usr/local/bin/nvim
-	srun wget https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim.appimage -O /usr/local/bin/nvim
-	srun chmod +x /usr/local/bin/nvim
-	srun update-alternatives --install /usr/bin/vi vi /usr/local/bin/nvim 60
-	srun update-alternatives --auto vi
-	srun update-alternatives --install /usr/bin/vim vim /usr/local/bin/nvim 60
-	srun update-alternatives --auto vim
-	srun update-alternatives --install /usr/bin/editor editor /usr/local/bin/nvim 60
-	srun update-alternatives --auto editor
-}
-
-neovim_pkg() {
-	srun apt update
-	srun apt install python-neovim python3-neovim
-}
-
 go_pkg() {
 	export GOPATH=/home/dqminh
-	run go get golang.org/x/lint
-	run go get golang.org/x/tools/cmd/cover
-	run go get golang.org/x/review/git-codereview
-	run go get golang.org/x/tools/cmd/goimports
-	run go get golang.org/x/tools/cmd/gorename
-	run go get golang.org/x/tools/cmd/guru
-	run go get github.com/mdempsky/gocode
-	run go get github.com/rogpeppe/godef
-	run go get github.com/shurcooL/markdownfmt
+	run go install golang.org/x/lint
+	run go install golang.org/x/tools/cmd/cover
+	run go install golang.org/x/review/git-codereview
+	run go install golang.org/x/tools/cmd/goimports
+	run go install golang.org/x/tools/cmd/gorename
+	run go install golang.org/x/tools/cmd/guru
+	run go install github.com/mdempsky/gocode
+	run go install github.com/rogpeppe/godef
+	run go install github.com/shurcooL/markdownfmt
+	run go install github.com/jesseduffield/lazygit@latest
 }
 
 fonts_install() {
 	mkdir -p $HOME/.local/share
 	link fonts .local/share/fonts
 	fc-cache -fv
-}
-
-curl_install() {
-	`curl version | grep "${CURL_VERSION}"` && return 0
-	srun apt-get install -y build-essential nghttp2 libnghttp2-dev libssl-dev
-	wget https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz
-	tar -xzvf curl-${CURL_VERSION}.tar.gz && rm -f curl-${CURL_VERSION}.tar.gz && cd curl-${CURL_VERSION}
-	./configure --prefix=/usr/local --with-ssl --with-nghttp2
-	make
-	srun make install
-	srun ldconfig
-	cd .. && rm -rf curl-${CURL_VERSION}
 }
 
 config_install() {
@@ -210,22 +193,17 @@ config_install() {
 	[".tmux.conf"]=".tmux.conf"
 	[".zshrc"]=".zshrc"
 	[".zsh"]=".zsh"
-	["nvim/autoload/plug.vim"]=".config/nvim/autoload/plug.vim"
-	["nvim/init.vim"]=".config/nvim/init.vim"
-	["nvim/coc-settings.json"]=".config/nvim/coc-settings.json"
+	["zsh-histdb"]=".zsh-histdb"
+	["base16-shell"]=".config/base16-shell"
+	["base16-tmux"]=".config/base16-tmux"
+	["nvim/init.lua"]=".config/nvim/init.lua"
 	)
 
-	run mkdir -p $HOME/.config/nvim
-	run mkdir -p $HOME/.config/nvim/autoload
+	mkdir -p ~/.config/nvim
 
 	for name in "${!configs[@]}"; do
 		link $name ${configs[$name]}
 	done
-}
-
-themes_install() {
-	mkdir -p ~/.config
-	git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
 }
 
 usage() {
@@ -235,7 +213,6 @@ usage() {
 	echo "  golang  - setup go and packages"
 	echo "  rust    - setup rust and packages"
 	echo "  fonts   - setup fonts"
-	echo "  themes  - setup some themes"
 }
 
 main() {
@@ -252,22 +229,12 @@ main() {
 			( go_install )
 			( go_pkg )
 			;;
-		neovim)
-			( neovim_install )
-			( neovim_pkg )
-			;;
 		rust)
 			( rust_install )
 			( rust_pkg )
 			;;
-		curl)
-			( curl_install )
-			;;
 		fonts)
 			( fonts_install )
-			;;
-		themes)
-			( themes_install )
 			;;
 		*)
 			usage

@@ -21,5 +21,4 @@ alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.ar
 # find . -name .gitattributes | map dirname
 alias map="xargs -n1"
 
-# Lock the screen (when going AFK)
-alias afk="i3lock -c 000000"
+alias bazel="bazelisk"

@@ -5,8 +5,8 @@ set -g set-clipboard off
 set -k
 setopt clobber
 
-BASE16_SHELL=$HOME/.config/base16-shell/
-[ -n "$PS1" ] && [ -s $BASE16_SHELL/profile_helper.sh ] && eval "$($BASE16_SHELL/profile_helper.sh)"
+# BASE16_SHELL=$HOME/.config/base16-shell
+# [ -n "$PS1" ] && [ -s $BASE16_SHELL/profile_helper.sh ] && source "$BASE16_SHELL/profile_helper.sh"
 
 load=(
   ~/.zshrc.local
@@ -22,6 +22,8 @@ load=(
   /usr/bin/virtualenvwrapper.sh
   ~/.local/bin/virtualenvwrapper.sh
   ~/.bazel/bin/bazel-complete.bash
+  ~/.zsh-histdb/sqlite-history.zsh
+  ~/.zsh-histdb/histdb-interactive.zsh
 )
 for file in $load; do
   [[ -r "$file" ]] && [[ -f "$file" ]] && source "$file"
@@ -30,7 +32,11 @@ done
 fpath=("$HOME/.zsh" $fpath)
 autoload -U colors && colors
 autoload -Uz promptinit && promptinit
+autoload -Uz add-zsh-hook
 prompt "dqminh"
+
+# https://github.com/larkery/zsh-histdb reverse isearch
+bindkey '^r' _histdb-isearch
 
 export PATH="$PATH:${HOME}/workspace/depot_tools"
 
@@ -38,22 +44,8 @@ if [[ $TILIX_ID ]]; then
 	source /etc/profile.d/vte.sh
 fi
 
-conda() {
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/dqminh/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/home/dqminh/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/dqminh/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/home/dqminh/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-}
-
 # direnv
 eval "$(direnv hook zsh)"
+
+# opam
+[[ ! -r /home/dqminh/.opam/opam-init/init.zsh ]] || source /home/dqminh/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null

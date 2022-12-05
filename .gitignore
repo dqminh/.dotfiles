@@ -49,3 +49,4 @@ mkosi.rootpw
 
 coredumps/
 pprof-archive/
+.luarc.json

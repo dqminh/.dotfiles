@@ -36,7 +36,7 @@
   excludesfile = ~/.gitignore
   attributesfile = ~/.gitattributes
   # Treat spaces before tabs, lines that are indented with 8 or more spaces, and all kinds of trailing whitespace as an error
-  whitespace = space-before-tab,indent-with-non-tab,trailing-space
+  whitespace = space-before-tab,trailing-space
   editor = vim
 [color]
   # Use colors in Git commands that are capable of colored output when outputting to the terminal
@@ -54,9 +54,11 @@
   added = yellow
   changed = green
   untracked = cyan
-  [merge]
+[merge]
   # Include summaries of merged commits in newly created merge commit messages
   log = true
+  renamelimit = 8096
+	conflictstyle = diff3
 # Use `origin` as the default remote on the `master` branch in all cases
 [branch "master"]
   remote = origin
@@ -75,16 +77,24 @@
 [url "git://gist.github.com/"]
   insteadOf = "gist:"
 [user]
-  name = Daniel Dao
-  email = dqminh89@gmail.com
-  signingkey = 8132944994744A3068B6F53CE59A5D531B20D399
+	name = Daniel Dao
+  signingkey = 21CBC10283775970F40C3FE4ECAB2B462D43B768
+	email = dqminh89@gmail.com
 [push]
   default = current
 [rerere]
   enabled = 1
 [http]
-  cookiefile = /Users/dqminh/.gitcookies
+	cookiefile = /home/dqminh/.gitcookies
 [web]
   browser = open
 [commit]
 	gpgsign = true
+[includeIf "gitdir/i:~/cloudflare/"]
+	path = /home/dqminh/.gitconfig_cloudflare
+[includeIf "gitdir/i:~/workspace/"]
+	path = /home/dqminh/.gitconfig_normal
+[includeIf "gitdir/i:~/src/"]
+	path = /home/dqminh/.gitconfig_normal
+[init]
+	defaultBranch = main

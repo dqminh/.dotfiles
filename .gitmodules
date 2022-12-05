@@ -1,0 +1,15 @@
+[submodule "base16-tmux"]
+	path = base16-tmux
+	url = https://github.com/base16-project/base16-tmux.git
+[submodule "base16-shell"]
+	path = base16-shell
+	url = https://github.com/base16-project/base16-shell.git
+[submodule "tpm"]
+	path = tpm
+	url = https://github.com/tmux-plugins/tpm
+[submodule "catpuccin-gnome-terminal"]
+	path = catpuccin-gnome-terminal
+	url = https://github.com/catppuccin/gnome-terminal
+[submodule "zsh-histdb"]
+	path = zsh-histdb
+	url = https://github.com/larkery/zsh-histdb

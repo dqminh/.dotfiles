@@ -1,1 +1,0 @@
-/home/dqminh/.dotfiles/.zsh

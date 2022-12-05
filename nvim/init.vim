@@ -3,10 +3,10 @@
 set encoding=utf-8
 
 call plug#begin()
-Plug 'scrooloose/nerdtree'
-Plug 'jlanzarotta/bufexplorer'
-Plug 'ntpeters/vim-better-whitespace'
-Plug 'junegunn/vim-easy-align'
+" Plug 'scrooloose/nerdtree'
+" Plug 'ntpeters/vim-better-whitespace'
+" Plug 'jlanzarotta/bufexplorer'
+" Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'
@@ -22,8 +22,15 @@ Plug 'tpope/vim-rhubarb'
 
 Plug 'liuchengxu/vim-clap', { 'do': ':Clap install-binary' }
 
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+Plug 'nvim-telescope/telescope-live-grep-args.nvim'
+Plug 'AckslD/nvim-neoclip.lua'
+Plug 'fannheyward/telescope-coc.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 Plug 'justinmk/vim-sneak'
 Plug 'tpope/vim-eunuch'
@@ -37,6 +44,9 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'sheerun/vim-polyglot'
 Plug 'saltstack/salt-vim'
 Plug 'teal-language/vim-teal'
+Plug 'mmarchini/bpftrace.vim'
+Plug 'lepture/vim-jinja'
+Plug 'rust-lang/rust.vim'
 
 " themes
 Plug 'vim-airline/vim-airline-themes'
@@ -45,6 +55,7 @@ Plug 'chriskempson/base16-vim'
 Plug 'rafi/awesome-vim-colorschemes'
 Plug 'haishanh/night-owl.vim'
 Plug 'sonph/onehalf', {'rtp': 'vim/'}
+Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
 call plug#end()
 
 filetype plugin indent on
@@ -185,6 +196,29 @@ set inccommand=nosplit " Shows the effects of a command incrementally, as you ty
 
 " PLUGINS
 
+lua << EOF
+local lga_actions = require("telescope-live-grep-args.actions")
+local telescope = require("telescope")
+
+telescope.load_extension("live_grep_args")
+telescope.load_extension('fzf')
+
+telescope.setup{
+  extensions = {
+    fzf = {
+      fuzzy = true,                    -- false will only do exact matching
+      override_generic_sorter = true,  -- override the generic sorter
+      override_file_sorter = true,     -- override the file sorter
+      case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+                                       -- the default case_mode is "smart_case"
+    },
+    live_grep_args = {
+      auto_quoting = true, -- enable/disable auto-quoting
+    },
+  }
+}
+EOF
+
 let g:python_host_prog  = '/usr/bin/python2'
 let g:python3_host_prog = '/usr/bin/python3'
 
@@ -236,6 +270,27 @@ nmap ga <Plug>(EasyAlign)
 
 " <Leader>1: Toggle between paste mode
 nnoremap <silent> <Leader>1 :set paste!<cr>
+
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice.
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
 
 " Press Shift+P while in visual mode to replace the selection without
 " overwriting the default register
@@ -291,11 +346,9 @@ nmap <silent><leader>nt :NERDTreeToggle<CR>
 nmap <silent><leader>nf :NERDTreeFind<CR>
 
 " fzf
-nmap <leader><leader> :Files<CR>
-" for example gsW, gsiw to search
-nmap gs  <plug>(GrepperOperator)
-xmap gs  <plug>(GrepperOperator)
-nmap <leader>f :Grepper -tool rg -jump<cr>
+nmap <leader><leader> <cmd>Telescope find_files<cr>
+nmap <leader>f <cmd>lua require("telescope").extensions.live_grep_args.live_grep_args()<cr>
+nmap gs  <cmd>Telescope grep_string<cr>
 
 "remove highlight when press enter
 nnoremap <CR> :noh<CR><CR>
@@ -303,6 +356,8 @@ nnoremap <CR> :noh<CR><CR>
 " +/-: Increment number
 nnoremap + <c-a>
 nnoremap - <c-x>
+
+let g:rustfmt_autosave = 1
 
 "------------------------------------------------------------------------------
 " FILETYPES
@@ -326,6 +381,8 @@ au FileType text setlocal textwidth=78
 au FileType rust let b:AutoPairs = {'(':')', '[':']', '{':'}','"':'"', "`":"`", '```':'```', '"""':'"""', "'''":"'''"}
 au BufRead,BufNewFile Cargo.toml setlocal textwidth=999
 
+au FileType c,cpp setlocal nolist
+
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
 " hacks from above (the url, not jesus) to delete fugitive buffers when we
 " leave them - otherwise the buffer list gets poluted
@@ -348,12 +405,6 @@ augroup END
 "------------------------------------------------------------------------------
 " LANG SERVER
 "------------------------------------------------------------------------------
-
-" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current
-" position. Coc only does snippet and additional edit on confirm.
-" <cr> could be remapped by other vim plugin, try `:verbose imap <CR>`.
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 augroup coc
   autocmd!
@@ -390,6 +441,7 @@ augroup coc
   autocmd FileType c,cpp,rust,python,go nnoremap <silent><nowait> <space>p :<C-u>CocListResume<CR>
 
   autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
+  autocmd BufWritePre *.cpp :silent call CocActionAsync('format')
 augroup end
 
 if filereadable(expand("~/.vimrc.local"))
