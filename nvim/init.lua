@@ -215,7 +215,7 @@ require('packer').startup(function(use)
     'glepnir/lspsaga.nvim',
     branch = "main",
     config = function()
-      require('lspsaga').init_lsp_saga({
+      require('lspsaga').setup({
         finder_action_keys = {
           open = "<cr>",
           vsplit = "s",
@@ -233,7 +233,7 @@ require('packer').startup(function(use)
       local null_ls = require "null-ls"
       null_ls.setup({
         sources = {
-          null_ls.builtins.formatting.isort,
+          null_ls.builtins.formatting.usort,
           null_ls.builtins.formatting.black,
           null_ls.builtins.completion.spell,
         },
@@ -299,7 +299,7 @@ end
 -- Writes to the unnamed register also writes to the * and + registers. This
 -- makes it easy to interact with the system clipboard
 vim.cmd [[
-if (!has('nvim') || $DISPLAY != '') && has('clipboard')
+if has('clipboard')
   if has('unnamedplus')
      set clipboard& clipboard+=unnamedplus
   else
@@ -425,6 +425,13 @@ rt.setup({
   },
   server = {
     on_attach = on_attach_lsp,
+    settings = {
+      ['rust-analyzer'] = {
+        diagnostics = {
+          disabled = {"inactive-code"},
+        },
+      },
+    },
   },
 })
 

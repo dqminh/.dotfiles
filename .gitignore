@@ -50,3 +50,5 @@ mkosi.rootpw
 coredumps/
 pprof-archive/
 .luarc.json
+tpm/
+zsh-histdb/

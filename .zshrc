@@ -62,11 +62,13 @@ alias tl='tmux list-sessions'
 alias ls='ls -lh --color=auto'
 alias vi='nvim'
 alias vim='nvim'
+alias colo='colo -access'
 
+# adjust this if we are in the VM and we want to use lemonade
 if [[ "$(uname)" = "Linux" ]]; then
-  alias pbcopy='xclip -i -sel clip > /dev/null'
+  alias pbcopy='lemonade copy'
   alias pbpaste='xclip -o -sel clip'
-  alias open='xdg-open'
+  alias open='lemonade open'
 fi
 
 # URL-encode strings

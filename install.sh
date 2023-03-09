@@ -1,10 +1,10 @@
-#!/bin/zsh
+#!/bin/bash
 set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.19.1
-RUST_VERSION=1.63.0
+GO_VERSION=1.19.3
+RUST_VERSION=1.65.0
 NEOVIM_VERSION=0.8.1
 USER=dqminh
 
@@ -45,14 +45,16 @@ apt_sources() {
  		--no-install-recommends
 
 	# install docker
-	if [[ -f /etc/apt/sources.list.d/docker.list ]]; then
+	if [[ ! -f /etc/apt/sources.list.d/docker.list ]]; then
 		srun mkdir -p /etc/apt/keyrings
 		srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
 		echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	fi
 
 	# install nodejs
-	curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - sudo apt-get install -y nodejs
+	if [[ ! -f /etc/apt/sources.list.d/nodesource.list ]]; then
+		curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+	fi
 
 	# turn off translations, speed up apt-get update
 	if [[ ! -f /etc/apt/apt.conf.d/99translations ]]; then
@@ -71,12 +73,12 @@ apt_pkg() {
 		apparmor \
 		automake \
 		bash-completion \
+		nodejs \
 		bc \
 		bridge-utils \
 		build-essential \
 		bzip2 \
 		ca-certificates \
-		cgroupfs-mount \
 		coreutils \
 		curl \
 		dnsutils \
@@ -84,7 +86,6 @@ apt_pkg() {
 		findutils \
 		gcc \
 		git \
-		google-chrome-stable \
 		grep \
 		gzip \
 		hostname \
@@ -103,8 +104,6 @@ apt_pkg() {
 		net-tools \
 		network-manager \
 		luarocks \
-		openconnect \
-		pinentry-curses \
 		python3 \
 		python-is-python3 \
 		python3-pip \
@@ -125,7 +124,6 @@ apt_pkg() {
 		cmake \
 		mercurial \
 		pkg-config \
-		ufw \
 		docker-compose-plugin \
 		--no-install-recommends
 
@@ -143,8 +141,6 @@ apt_pkg() {
 
 	# setup persistent journal
 	srun mkdir -p /var/log/journal
-
-	srun ufw enable
 }
 
 neovim_install() {
@@ -216,6 +212,8 @@ config_install() {
 	for name in "${!configs[@]}"; do
 		link $name ${configs[$name]}
 	done
+
+	 ln -sf $(which lemonade) $HOME/bin/xdg-open
 }
 
 usage() {
