@@ -97,8 +97,7 @@ apt_pkg() {
 		libc6-dev \
 		libltdl-dev \
 		libseccomp-dev \
-		locales \
-		lsof \
+		locales \ lsof \
 		make \
 		mount \
 		net-tools \
