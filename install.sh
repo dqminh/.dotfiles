@@ -206,7 +206,13 @@ config_install() {
 		link $name ${configs[$name]}
 	done
 
-	 ln -sf $(which lemonade) $HOME/bin/xdg-open
+	if [[ "$(uname)" == "Darwin" ]]; then
+		mkdir -p $HOME/Library/LaunchAgents
+		cp $CUR/local.lemonade.plist $HOME/Library/LaunchAgents/local.lemonade.plist
+		launchctl load $HOME/Library/LaunchAgents/local.lemonade.plist
+	else
+		ln -sf $(which lemonade) $HOME/bin/xdg-open
+	fi
 }
 
 usage() {

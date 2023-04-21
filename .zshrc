@@ -86,6 +86,9 @@ export CDPATH=~/workspace:$CDPATH
 
 [[ -f /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# load ssh-add
+[[ -f /tmp/run-ssh-add ]] || (ssh-add --apple-load-keychain >/dev/null 2>&1 && touch /tmp/run-ssh-add)
+
 # opam
 [[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
 
