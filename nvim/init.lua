@@ -155,6 +155,7 @@ require("lazy").setup({
 
   { 'junegunn/fzf', build = './install --bin' },
   "preservim/nerdtree",
+  "preservim/nerdcommenter",
   "jlanzarotta/bufexplorer",
   "tpope/vim-repeat",
   'tpope/vim-surround',
@@ -246,7 +247,6 @@ require("lazy").setup({
         sources = {
           null_ls.builtins.formatting.usort,
           null_ls.builtins.formatting.black,
-          null_ls.builtins.completion.spell,
         },
       }
     end,
@@ -408,7 +408,7 @@ for _, lsp in pairs(LSP) do
       clangdFileStatus = true, -- Provides information about activity on clangd’s per-file worker thread
       usePlaceholders = true,
       completeUnimported = true,
-      semanticHighlighting = true,
+      semanticHighlighting = false,
     }
   elseif lsp == 'lua_ls' then
     opt.settings = {
@@ -442,6 +442,9 @@ rt.setup({
       ['rust-analyzer'] = {
         diagnostics = {
           disabled = { "inactive-code" },
+        },
+        rustfmt = {
+          extraArgs = { "+nightly", },
         },
       },
     },
@@ -554,3 +557,11 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
     vim.cmd("tabdo wincmd =")
   end,
 })
+
+-- disable semantic tokens to highlight everything
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    client.server_capabilities.semanticTokensProvider = nil
+  end,
+});
