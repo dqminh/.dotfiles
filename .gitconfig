@@ -21,7 +21,7 @@
   undopush = push -f origin HEAD^:master
   st = status
   co = checkout
-  cs = commit -sS
+  cs = commit -s
   cp = cherry-pick
 
   # golang codereview

@@ -27,18 +27,22 @@ local function setup_auto_format(ft, command)
   if not command then
     command = "lua vim.lsp.buf.format()"
   end
-  vim.cmd(string.format("autocmd BufWritePost *.%s %s", ft, command))
+  vim.cmd(string.format("autocmd BufWritePre *.%s %s", ft, command))
 end
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local function on_attach_lsp(_, bufnr)
+local function on_attach_lsp(client, bufnr)
+  if client.name == 'ruff_lsp' then
+    -- Disable hover in favor of Pyright
+    client.server_capabilities.hoverProvider = false
+  end
   -- Mappings.
   -- See `:help vim.lsp.*` for documentation on any of the below functions
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
   keymap('n', '<leader>ss', "<cmd>Telescope lsp_workspace_symbols<cr>", bufopts)
   keymap("n", "gd", "<cmd>Lspsaga goto_definition<cr>", bufopts)
-  keymap("n", "gD", "<cmd>Lspsaga lsp_finder<cr>", bufopts)
+  keymap("n", "gD", "<cmd>Lspsaga finder<cr>", bufopts)
   keymap("n", "gK", vim.lsp.buf.signature_help, bufopts)
   keymap("n", "gt", "<cmd>Lspsaga goto_type_definition<cr>", bufopts)
   keymap("n", "K", "<cmd>Lspsaga hover_doc<cr>", bufopts)
@@ -51,7 +55,7 @@ local function on_attach_lsp(_, bufnr)
 end
 
 local LSP = {
-  "lua_ls", "clangd", "gopls", "tsserver", "pyright"
+  "lua_ls", "clangd", "gopls", "tsserver", "pyright", "ruff_lsp"
 }
 
 local global_opts = {
@@ -85,16 +89,13 @@ local opts = {
   signcolumn = "yes",
   mouse = "a",
   laststatus = 3, -- set global statusline
-
   -- disable bell
   visualbell = false,
   belloff = "all",
-
   -- no backup and swap
   backup = false,
   writebackup = false,
   swapfile = false,
-
   -- search
   hlsearch = true,
   incsearch = true,
@@ -102,7 +103,6 @@ local opts = {
   smartcase = true,
   wrapscan = true,
   showmatch = true,
-
   -- indent
   autoindent = true,
   smartindent = true,
@@ -112,21 +112,17 @@ local opts = {
   shiftround = true,
   expandtab = true,
   wrap = false,
-
   -- timeout for toyping etc.
   updatetime = 300,
   timeout = false,
   ttimeout = true,
   ttimeoutlen = 10,
   ttyfast = true,
-
   --  Shows the effects of a command incrementally, as you type.
   inccommand = "nosplit",
-
   -- modelines
   modelines = 0,
   modeline = false,
-
   completeopt = "menu,menuone,noselect"
 }
 
@@ -151,16 +147,15 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   { "nvim-lua/plenary.nvim", lazy = false },
   "stevearc/dressing.nvim",
-  { "catppuccin/nvim", lazy = false, name = "catppuccin" },
-
-  { 'junegunn/fzf', build = './install --bin' },
+  { "catppuccin/nvim",       lazy = false,             name = "catppuccin" },
+  { 'junegunn/fzf',          build = './install --bin' },
   "preservim/nerdtree",
   "preservim/nerdcommenter",
   "jlanzarotta/bufexplorer",
   "tpope/vim-repeat",
   'tpope/vim-surround',
   'tpope/vim-fugitive',
-  'ntpeters/vim-better-whitespace',
+  { 'ntpeters/vim-better-whitespace', lazy = false },
   'sheerun/vim-polyglot',
   {
     "echasnovski/mini.pairs",
@@ -172,7 +167,7 @@ require("lazy").setup({
   'vim-scripts/YankRing.vim',
   'junegunn/vim-easy-align',
 
-  { 'lewis6991/gitsigns.nvim', event = { "BufReadPre", "BufNewFile" } },
+  { 'lewis6991/gitsigns.nvim',        event = { "BufReadPre", "BufNewFile" } },
   'simrat39/rust-tools.nvim',
 
   {
@@ -215,13 +210,13 @@ require("lazy").setup({
     },
     keys = {
       { "<c-space>", desc = "Increment selection" },
-      { "<bs>", desc = "Decrement selection", mode = "x" },
+      { "<bs>",      desc = "Decrement selection", mode = "x" },
     },
     opts = {
       highlight = { enable = true },
       indent = { enable = true, disable = { "python" } },
       context_commentstring = { enable = true, enable_autocmd = false },
-      ensure_installed = { "bash", "c", "rust", "lua", "python", "vim", "yaml", "go", "markdown", "markdown_inline"},
+      ensure_installed = { "bash", "c", "rust", "lua", "python", "vim", "yaml", "go", "markdown", "markdown_inline" },
       incremental_selection = {
         enable = true,
         keymaps = {
@@ -241,24 +236,17 @@ require("lazy").setup({
     "jose-elias-alvarez/null-ls.nvim",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = { "mason.nvim" },
-    opts = function()
-      local null_ls = require("null-ls")
-      return {
-        sources = {
-          null_ls.builtins.formatting.usort,
-          null_ls.builtins.formatting.black,
-        },
-      }
-    end,
   },
   {
-    'williamboman/mason.nvim', lazy = false,
+    'williamboman/mason.nvim',
+    lazy = false,
     config = function()
       require("mason").setup()
     end
   },
   {
-    'williamboman/mason-lspconfig.nvim', lazy = false,
+    'williamboman/mason-lspconfig.nvim',
+    lazy = false,
     config = function()
       require("mason-lspconfig").setup()
     end
@@ -273,6 +261,8 @@ require("lazy").setup({
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
+      'hrsh7th/cmp-vsnip',
+      'hrsh7th/vim-vsnip',
     },
     opts = function()
       local cmp = require("cmp")
@@ -303,12 +293,18 @@ require("lazy").setup({
             hl_group = "LspCodeLens",
           },
         },
+        snippet = {
+          -- REQUIRED - you must specify a snippet engine
+          expand = function(args)
+            vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+          end,
+        },
       }
     end,
   },
 
   -- fuzzy finder
-  { 'nvim-telescope/telescope-fzf-native.nvim', dependencies = { 'nvim-telescope/telescope.nvim' }, build = 'make' },
+  { 'nvim-telescope/telescope-fzf-native.nvim',     dependencies = { 'nvim-telescope/telescope.nvim' }, build = 'make' },
   { 'nvim-telescope/telescope-live-grep-args.nvim', dependencies = { 'nvim-telescope/telescope.nvim' } },
   {
     "nvim-telescope/telescope.nvim",
@@ -323,8 +319,8 @@ require("lazy").setup({
     opts = { use_diagnostic_signs = true },
     keys = {
       { "<leader>xx", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace Diagnostics (Trouble)" },
-      { "<leader>xL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List (Trouble)" },
-      { "<leader>xQ", "<cmd>TroubleToggle quickfix<cr>", desc = "Quickfix List (Trouble)" },
+      { "<leader>xL", "<cmd>TroubleToggle loclist<cr>",               desc = "Location List (Trouble)" },
+      { "<leader>xQ", "<cmd>TroubleToggle quickfix<cr>",              desc = "Quickfix List (Trouble)" },
       {
         "[q",
         function()
@@ -349,6 +345,35 @@ require("lazy").setup({
       },
     },
   },
+
+  {
+    'linrongbin16/lsp-progress.nvim',
+    config = function()
+      require('lsp-progress').setup()
+    end
+  },
+
+  {
+    'nvim-lualine/lualine.nvim',
+    depdendencies = {
+      'nvim-tree/nvim-web-devicons',
+      'linrongbin16/lsp-progress.nvim',
+    },
+    config = function()
+      require('lualine').setup({
+        sections = {
+          lualine_a = {'mode'},
+          lualine_b = {'branch', 'diff', 'diagnostics'},
+          lualine_c = {
+            require('lsp-progress').progress
+          },
+          lualine_x = {'encoding', 'fileformat', 'filetype'},
+          lualine_y = {'progress'},
+          lualine_z = {'location', { 'filename', path=1 }}
+        },
+      })
+    end
+  }
 })
 
 local telescope = require("telescope")
@@ -373,10 +398,10 @@ telescope.setup({
   },
   extensions = {
     fzf = {
-      fuzzy = true, -- false will only do exact matching
+      fuzzy = true,                   -- false will only do exact matching
       override_generic_sorter = true, -- override the generic sorter
-      override_file_sorter = true, -- override the file sorter
-      case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+      override_file_sorter = true,    -- override the file sorter
+      case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
       -- the default case_mode is "smart_case"
     },
     live_grep_args = {
@@ -405,7 +430,7 @@ for _, lsp in pairs(LSP) do
   }
   if lsp == 'clangd' then
     opt.init_options = {
-      clangdFileStatus = true, -- Provides information about activity on clangdâ€™s per-file worker thread
+      clangdFileStatus = true, -- Provides information about activity on clangdÕs per-file worker thread
       usePlaceholders = true,
       completeUnimported = true,
       semanticHighlighting = false,
@@ -426,6 +451,19 @@ for _, lsp in pairs(LSP) do
         enable = false,
       },
     }
+  elseif lsp == "pyright" then
+    opt.settings = {
+      pyright = {
+        -- Using Ruff's import organizer
+        disableOrganizeImports = true,
+      },
+      python = {
+        analysis = {
+          -- Ignore all files for analysis to exclusively use Ruff for linting
+          ignore = { '*' },
+        },
+      },
+    }
   end
 
   lspconfig[lsp].setup(opt)
@@ -442,9 +480,6 @@ rt.setup({
       ['rust-analyzer'] = {
         diagnostics = {
           disabled = { "inactive-code" },
-        },
-        rustfmt = {
-          extraArgs = { "+nightly", },
         },
       },
     },
@@ -488,7 +523,7 @@ au BufReadPost fugitive://*
 
 -- Setup autoformat for file types that we surely want to do so
 for _, ft in pairs({
-  'go', 'rs', 'vim',
+  'go', 'rs', 'vim', 'py',
 }) do
   setup_auto_format(ft)
 end
@@ -550,6 +585,8 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
+vim.cmd(string.format("autocmd FileType python EnableStripWhitespaceOnSave"))
+
 -- resize splits if window got resized
 vim.api.nvim_create_autocmd({ "VimResized" }, {
   group = augroup("resize_splits"),
@@ -565,3 +602,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
     client.server_capabilities.semanticTokensProvider = nil
   end,
 });
+
+vim.api.nvim_create_augroup("lualine_augroup", { clear = true })
+vim.api.nvim_create_autocmd("User", {
+  group = "lualine_augroup",
+  pattern = "LspProgressStatusUpdated",
+  callback = require("lualine").refresh,
+})

@@ -3,9 +3,9 @@ set -e
 
 CUR=$(pwd)
 NOOP=${NOOP:-false}
-GO_VERSION=1.19.3
-RUST_VERSION=1.65.0
-NEOVIM_VERSION=0.8.1
+GO_VERSION=1.24.6
+RUST_VERSION=1.74.0
+NEOVIM_VERSION=0.9.4
 USER=dqminh
 
 command_exists () { type "$1" &> /dev/null; }
@@ -47,13 +47,8 @@ apt_sources() {
 	# install docker
 	if [[ ! -f /etc/apt/sources.list.d/docker.list ]]; then
 		srun mkdir -p /etc/apt/keyrings
-		srun sh -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
-		echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	fi
-
-	# install nodejs
-	if [[ ! -f /etc/apt/sources.list.d/nodesource.list ]]; then
-		curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+		srun sh -c "curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
+		echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	fi
 
 	# turn off translations, speed up apt-get update
@@ -97,11 +92,10 @@ apt_pkg() {
 		libc6-dev \
 		libltdl-dev \
 		libseccomp-dev \
-		locales \ lsof \
+		locales \
 		make \
 		mount \
 		net-tools \
-		network-manager \
 		luarocks \
 		python3 \
 		python-is-python3 \
@@ -151,7 +145,7 @@ neovim_install() {
 	if [[ ! -f ~/workspace/neovim ]]; then
 		git clone https://github.com/neovim/neovim.git ~/workspace/neovim
 	fi
-	cd ~/workspace/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo && sudo make install
+	cd ~/workspace/neovim && git checkout v${NEOVIM_VERSION} && make CMAKE_BUILD_TYPE=RelWithDebInfo && sudo make install
 
 	# neovim is vim
 	srun update-alternatives --install /usr/bin/vi vi /usr/local/bin/nvim 60
@@ -233,9 +227,13 @@ main() {
 				( apt_pkg )
 				( go_install )
 				( rust_install )
+				( neovim_install )
 			fi
 			( go_pkg )
 			( rust_pkg )
+			;;
+		go)
+			( go_install )
 			;;
 		config)
 			( config_install )
