@@ -23,11 +23,16 @@ local function map(mode, lhs, rhs, opts)
   end
 end
 
-local function setup_auto_format(ft, command)
-  if not command then
-    command = "lua vim.lsp.buf.format()"
-  end
-  vim.cmd(string.format("autocmd BufWritePre *.%s %s", ft, command))
+local function setup_auto_format(ft)
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*." .. ft,
+    callback = function(args)
+      require("conform").format({
+        bufnr = args.buf,
+        lsp_format = "fallback",
+      })
+    end,
+  })
 end
 
 -- Use an on_attach function to only map the following keys
@@ -51,7 +56,16 @@ local function on_attach_lsp(client, bufnr)
   keymap("n", "<Leader>ci", "<cmd>Lspsaga incoming_calls<CR>", bufopts)
   keymap("n", "<Leader>co", "<cmd>Lspsaga outgoing_calls<CR>", bufopts)
 
-  keymap({ 'n', 'v' }, 'ff', vim.lsp.buf.format, bufopts)
+  keymap({ 'n', 'v' }, 'ff', function()
+    require("conform").format({ async = true }, function(err)
+      if not err then
+        local mode = vim.api.nvim_get_mode().mode
+        if vim.startswith(string.lower(mode), "v") then
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+        end
+      end
+    end)
+  end, bufopts)
 end
 
 local LSP = {
@@ -163,27 +177,20 @@ require("lazy").setup({
       require('mini.pairs').setup()
     end
   },
+  'tpope/vim-rhubarb',
   'editorconfig/editorconfig-vim',
   'vim-scripts/YankRing.vim',
   'junegunn/vim-easy-align',
-
   { 'lewis6991/gitsigns.nvim',        event = { "BufReadPre", "BufNewFile" } },
-  'simrat39/rust-tools.nvim',
-
   {
-    'neovim/nvim-lspconfig',
-    event = { "BufReadPre", "BufNewFile" },
-    dependencies = {
-      'williamboman/mason.nvim',
-      "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-    },
+    'mrcjkb/rustaceanvim',
+    version = '^6', -- Recommended
+    lazy = false, -- This plugin is already lazy
   },
   {
-    "glepnir/lspsaga.nvim",
-    event = "LspAttach",
+    'nvimdev/lspsaga.nvim',
     config = function()
-      require("lspsaga").setup({
+      require('lspsaga').setup({
         finder_action_keys = {
           open = "<cr>",
           vsplit = "s",
@@ -191,13 +198,12 @@ require("lazy").setup({
           tabe = "t",
           quit = "q",
         },
+
       })
     end,
     dependencies = {
-      'neovim/nvim-lspconfig',
-      "nvim-tree/nvim-web-devicons",
-      --Please make sure you install markdown and markdown_inline parser
-      "nvim-treesitter/nvim-treesitter",
+      'nvim-treesitter/nvim-treesitter', -- optional
+      'nvim-tree/nvim-web-devicons',     -- optional
     }
   },
   {
@@ -231,25 +237,29 @@ require("lazy").setup({
       require("nvim-treesitter.configs").setup(o)
     end,
   },
-
   {
-    "jose-elias-alvarez/null-ls.nvim",
-    event = { "BufReadPre", "BufNewFile" },
-    dependencies = { "mason.nvim" },
+    'stevearc/conform.nvim',
+    opts = {
+      formatters_by_ft = {
+        -- Conform will run multiple formatters sequentially
+        python = { "isort", "black" },
+      },
+    },
   },
+  "neovim/nvim-lspconfig",
   {
-    'williamboman/mason.nvim',
-    lazy = false,
+    "mason-org/mason.nvim",
     config = function()
       require("mason").setup()
     end
   },
   {
-    'williamboman/mason-lspconfig.nvim',
-    lazy = false,
-    config = function()
-      require("mason-lspconfig").setup()
-    end
+    "mason-org/mason-lspconfig.nvim",
+    opts = {},
+    dependencies = {
+        { "mason-org/mason.nvim", opts = {} },
+        "neovim/nvim-lspconfig",
+    },
   },
 
   -- auto completion
@@ -377,15 +387,13 @@ require("lazy").setup({
 })
 
 local telescope = require("telescope")
-local lspconfig = require("lspconfig")
-local rt = require('rust-tools')
 
 telescope.setup({
   defaults = {
     mappings = {
       i = {
-        ["<c-t>"] = require("trouble.providers.telescope").open_with_trouble,
-        ["<a-t>"] = require("trouble.providers.telescope").open_selected_with_trouble,
+        ["<c-t>"] = require("trouble.sources.telescope").open,
+        ["<a-t>"] = require("trouble.sources.telescope").open,
         ["<C-Down>"] = require("telescope.actions").cycle_history_next,
         ["<C-Up>"] = require("telescope.actions").cycle_history_prev,
         ["<C-f>"] = require("telescope.actions").preview_scrolling_down,
@@ -466,26 +474,9 @@ for _, lsp in pairs(LSP) do
     }
   end
 
-  lspconfig[lsp].setup(opt)
+  vim.lsp.config(lsp, opt)
+  vim.lsp.enable(lsp)
 end
-
-rt.setup({
-  inlay_hints = {
-    auto = true,
-    only_current_line = true,
-  },
-  server = {
-    on_attach = on_attach_lsp,
-    settings = {
-      ['rust-analyzer'] = {
-        diagnostics = {
-          disabled = { "inactive-code" },
-        },
-      },
-    },
-  },
-})
-
 
 vim.cmd.colorscheme("catppuccin")
 
@@ -509,6 +500,7 @@ let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\.o.d$', '\..\.cmd$', 
 let NERDTreeHighlightCursorline=1
 
 au BufNewFile,BufRead *.sls set filetype=jinja.yaml
+au BufNewFile,BufRead *.sh.jinja set filetype=jinja.bash
 
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
 " hacks from above (the url, not jesus) to delete fugitive buffers when we
