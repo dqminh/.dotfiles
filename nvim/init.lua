@@ -38,7 +38,7 @@ end
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local function on_attach_lsp(client, bufnr)
-  if client.name == 'ruff_lsp' then
+  if client.name == 'ruff' then
     -- Disable hover in favor of Pyright
     client.server_capabilities.hoverProvider = false
   end
@@ -69,7 +69,7 @@ local function on_attach_lsp(client, bufnr)
 end
 
 local LSP = {
-  "lua_ls", "clangd", "gopls", "tsserver", "pyright", "ruff_lsp"
+  "lua_ls", "clangd", "gopls", "ts_ls", "pyright", "ruff"
 }
 
 local global_opts = {
@@ -163,12 +163,13 @@ require("lazy").setup({
   "stevearc/dressing.nvim",
   { "catppuccin/nvim",       lazy = false,             name = "catppuccin" },
   { 'junegunn/fzf',          build = './install --bin' },
-  "preservim/nerdtree",
+  -- "preservim/nerdtree",
   "preservim/nerdcommenter",
   "jlanzarotta/bufexplorer",
   "tpope/vim-repeat",
   'tpope/vim-surround',
   'tpope/vim-fugitive',
+  'shumphrey/fugitive-gitlab.vim',
   { 'ntpeters/vim-better-whitespace', lazy = false },
   'sheerun/vim-polyglot',
   {
@@ -186,6 +187,27 @@ require("lazy").setup({
     'mrcjkb/rustaceanvim',
     version = '^6', -- Recommended
     lazy = false, -- This plugin is already lazy
+  },
+  {'sindrets/diffview.nvim'},
+  {
+    "hat0uma/csvview.nvim",
+    opts = {
+      parser = { comments = { "#", "//" } },
+      keymaps = {
+        -- Text objects for selecting fields
+        textobject_field_inner = { "if", mode = { "o", "x" } },
+        textobject_field_outer = { "af", mode = { "o", "x" } },
+        -- Excel-like navigation:
+        -- Use <Tab> and <S-Tab> to move horizontally between fields.
+        -- Use <Enter> and <S-Enter> to move vertically between rows and place the cursor at the end of the field.
+        -- Note: In terminals, you may need to enable CSI-u mode to use <S-Tab> and <S-Enter>.
+        jump_next_field_end = { "<Tab>", mode = { "n", "v" } },
+        jump_prev_field_end = { "<S-Tab>", mode = { "n", "v" } },
+        jump_next_row = { "<Enter>", mode = { "n", "v" } },
+        jump_prev_row = { "<S-Enter>", mode = { "n", "v" } },
+      },
+    },
+    cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   },
   {
     'nvimdev/lspsaga.nvim',
@@ -208,34 +230,9 @@ require("lazy").setup({
   },
   {
     'nvim-treesitter/nvim-treesitter',
-    version = false,
+    lazy = false,
     build = ':TSUpdate',
     event = { "BufReadPost", "BufNewFile" },
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-    },
-    keys = {
-      { "<c-space>", desc = "Increment selection" },
-      { "<bs>",      desc = "Decrement selection", mode = "x" },
-    },
-    opts = {
-      highlight = { enable = true },
-      indent = { enable = true, disable = { "python" } },
-      context_commentstring = { enable = true, enable_autocmd = false },
-      ensure_installed = { "bash", "c", "rust", "lua", "python", "vim", "yaml", "go", "markdown", "markdown_inline" },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<C-space>",
-          node_incremental = "<C-space>",
-          scope_incremental = "<nop>",
-          node_decremental = "<bs>",
-        },
-      },
-    },
-    config = function(_, o)
-      require("nvim-treesitter.configs").setup(o)
-    end,
   },
   {
     'stevearc/conform.nvim',
@@ -318,7 +315,7 @@ require("lazy").setup({
   { 'nvim-telescope/telescope-live-grep-args.nvim', dependencies = { 'nvim-telescope/telescope.nvim' } },
   {
     "nvim-telescope/telescope.nvim",
-    version = false, -- telescope did only one release, so use HEAD for now
+    tag = 'v0.2.1',
     lazy = false,
   },
 
@@ -383,7 +380,80 @@ require("lazy").setup({
         },
       })
     end
-  }
+  },
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    ---@type snacks.Config
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      bigfile = { enabled = true },
+      dashboard = { enabled = true },
+      explorer = { enabled = true },
+      indent = { enabled = true },
+      input = { enabled = true },
+      picker = { enabled = true },
+      notifier = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = true },
+      words = { enabled = true },
+    },
+  },
+  {
+  "nickjvandyke/opencode.nvim",
+  version = "*", -- Latest stable release
+  dependencies = {
+    {
+      -- `snacks.nvim` integration is recommended, but optional
+      ---@module "snacks" <- Loads `snacks.nvim` types for configuration intellisense
+      "folke/snacks.nvim",
+      optional = true,
+      opts = {
+        input = {}, -- Enhances `ask()`
+        picker = { -- Enhances `select()`
+          actions = {
+            opencode_send = function(...) return require("opencode").snacks_picker_send(...) end,
+          },
+          win = {
+            input = {
+              keys = {
+                ["<a-a>"] = { "opencode_send", mode = { "n", "i" } },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  config = function()
+    ---@type opencode.Opts
+    vim.g.opencode_opts = {
+      -- Your configuration, if any; goto definition on the type or field for details
+    }
+
+    vim.o.autoread = true -- Required for `opts.events.reload`
+
+    -- Recommended/example keymaps
+    vim.keymap.set({ "n", "x" }, "<C-a>", function() require("opencode").ask("@this: ", { submit = true }) end, { desc = "Ask opencode¿" })
+    vim.keymap.set({ "n", "x" }, "<C-x>", function() require("opencode").select() end,                          { desc = "Execute opencode action¿" })
+    vim.keymap.set({ "n", "t" }, "<C-.>", function() require("opencode").toggle() end,                          { desc = "Toggle opencode" })
+
+    vim.keymap.set({ "n", "x" }, "go",  function() return require("opencode").operator("@this ") end,        { desc = "Add range to opencode", expr = true })
+    vim.keymap.set("n",          "goo", function() return require("opencode").operator("@this ") .. "_" end, { desc = "Add line to opencode", expr = true })
+
+    vim.keymap.set("n", "<S-C-u>", function() require("opencode").command("session.half.page.up") end,   { desc = "Scroll opencode up" })
+    vim.keymap.set("n", "<S-C-d>", function() require("opencode").command("session.half.page.down") end, { desc = "Scroll opencode down" })
+
+    -- You may want these if you use the opinionated `<C-a>` and `<C-x>` keymaps above ¿ otherwise consider `<leader>o¿` (and remove terminal mode from the `toggle` keymap)
+    vim.keymap.set("n", "+", "<C-a>", { desc = "Increment under cursor", noremap = true })
+    vim.keymap.set("n", "-", "<C-x>", { desc = "Decrement under cursor", noremap = true })
+  end,
+}
 })
 
 local telescope = require("telescope")
@@ -478,9 +548,69 @@ for _, lsp in pairs(LSP) do
   vim.lsp.enable(lsp)
 end
 
+vim.g.rustaceanvim = {
+  -- Plugin configuration
+  tools = {
+  },
+  -- LSP configuration
+  server = {
+    on_attach = function(client, bufnr)
+      local function desc(description)
+        return { noremap = true, silent = true, buffer = bufnr, desc = description }
+      end
+
+      vim.keymap.set('v', 'K', function()
+        vim.cmd.RustLsp { 'hover', 'range' }
+      end, desc('rust: hover range'))
+
+      vim.keymap.set("n", "<leader>ca", function()
+        vim.cmd.RustLsp('codeAction') -- supports rust-analyzer's grouping
+        -- or vim.lsp.buf.codeAction() if you don't want grouping.
+      end, desc('rust: code action'))
+
+      vim.keymap.set('n', 'K', function()
+        vim.cmd.RustLsp { 'hover', 'actions' }
+      end, desc('rust: hover range'))
+
+      vim.keymap.set('n', '<leader>em', function()
+        vim.cmd.RustLsp('expandMacro')
+      end, desc('rust: expand macro'))
+
+      vim.keymap.set('n', '<space>re', function()
+        vim.cmd.RustLsp('explainError')
+      end, desc('[r]ust: [e]xplain error'))
+      vim.keymap.set('n', '<space>rd', function()
+        vim.cmd.RustLsp('renderDiagnostic')
+      end, desc('rust: [r]ender [d]iagnostic'))
+      vim.keymap.set('n', '<space>gd', function()
+        vim.cmd.RustLsp('relatedDiagnostics')
+      end, desc('rust: [g]o to related [d]iagnostics'))
+
+      local bufopts = { noremap = true, silent = true, buffer = bufnr }
+      keymap("n", "gd", "<cmd>Lspsaga goto_definition<cr>", bufopts)
+      keymap("n", "gD", "<cmd>Lspsaga finder<cr>", bufopts)
+      keymap("n", "gK", vim.lsp.buf.signature_help, bufopts)
+      keymap("n", "gt", "<cmd>Lspsaga goto_type_definition<cr>", bufopts)
+      keymap("n", "<leader>ca", "<cmd>Lspsaga code_action<cr>", bufopts)
+      keymap("n", "<Leader>ci", "<cmd>Lspsaga incoming_calls<CR>", bufopts)
+      keymap("n", "<Leader>co", "<cmd>Lspsaga outgoing_calls<CR>", bufopts)
+    end,
+    default_settings = {
+      -- rust-analyzer language server configuration
+      ['rust-analyzer'] = {
+      },
+    },
+  },
+  -- DAP configuration
+  dap = {
+  },
+}
+
 vim.cmd.colorscheme("catppuccin")
 
 vim.cmd [[
+let g:fugitive_gitlab_domains = ['https://gitlab.cfdata.org']
+
 " NERDCommenter
 " Add spaces after comment delimiters by default
 let g:NERDSpaceDelims = 1
@@ -499,8 +629,11 @@ let NERDTREEWinSize=30
 let NERDTreeIgnore = ['\.pyc$', '^__pycache__$', '\.o$', '\.o.d$', '\..\.cmd$', '\.egg-info$', '\.ko$', '\.mod.c$', '\.order$', '\.symvers$', '\.ko.cmd$']
 let NERDTreeHighlightCursorline=1
 
-au BufNewFile,BufRead *.sls set filetype=jinja.yaml
-au BufNewFile,BufRead *.sh.jinja set filetype=jinja.bash
+au BufNewFile,BufRead *.sls setlocal filetype=jinja.yaml
+au BufNewFile,BufRead *.bt setlocal filetype=bash
+au BufRead *.sls if getline(1) =~ '#!py' | setlocal ft=python | endif
+au BufNewFile,BufRead *.sh.jinja setlocal filetype=jinja.bash
+
 
 " http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/
 " hacks from above (the url, not jesus) to delete fugitive buffers when we
